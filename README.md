@@ -178,19 +178,22 @@ with session_scope() as session:
 
 ### AI Integration
 
-- Document understanding using LLMs (OpenAI o4-mini)
+- Document understanding using LLMs (supports both OpenAI o4-mini and Anthropic Claude)
 - Semantic search using embeddings
 - Pattern recognition for complex financial patterns
 - Investigator Agent for interactive analysis
 - Natural language querying of documents
 - Report generation with evidence citations
+- Mock mode for development and testing without API calls
 
-### Reporting System (Coming Soon)
+### Reporting System
 
 - Multiple report types (summary, detailed, evidence chains)
 - Multiple output formats (Markdown, HTML, PDF, Excel)
 - Evidence citation linking findings to source documents
 - Visual elements (charts, tables, timelines)
+- Screenshot integration for visual evidence
+- Template-based generation with Jinja2
 
 ## CLI Usage
 
@@ -301,7 +304,7 @@ with session_scope() as session:
 
 ## AI Integration
 
-The system uses AI to enhance document analysis and provide natural language querying:
+The system uses AI to enhance document analysis and provide natural language querying with support for multiple LLM providers:
 
 ```python
 import os
@@ -313,19 +316,26 @@ from cdas.ai.agents.investigator import InvestigatorAgent
 
 # Load environment variables for API keys
 load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-# Configure LLM Manager
-llm_config = {
+# Configure LLM Manager with OpenAI
+openai_config = {
     'provider': 'openai',
     'model': 'o4-mini',
-    'api_key': OPENAI_API_KEY,
+    'api_key': os.getenv("OPENAI_API_KEY"),
     'reasoning_effort': 'medium'
 }
 
+# Alternatively, configure with Anthropic
+anthropic_config = {
+    'provider': 'anthropic',
+    'model': 'claude-3-7-sonnet-20250219',
+    'api_key': os.getenv("ANTHROPIC_API_KEY"),
+    'temperature': 0.0
+}
+
 with session_scope() as session:
-    # Initialize LLM Manager
-    llm_manager = LLMManager(llm_config)
+    # Initialize LLM Manager with your preferred provider
+    llm_manager = LLMManager(openai_config)  # or LLMManager(anthropic_config)
     
     # Get explanation from LLM
     explanation = llm_manager.generate(
@@ -337,7 +347,7 @@ with session_scope() as session:
     # Initialize Embedding Manager for semantic search
     embedding_manager = EmbeddingManager(session, {
         'embedding_model': 'text-embedding-3-small',
-        'api_key': OPENAI_API_KEY
+        'api_key': os.getenv("OPENAI_API_KEY")
     })
     
     # Search documents semantically
@@ -441,15 +451,15 @@ See the [Testing Documentation](tests/README.md) and [CI/CD Documentation](docs/
 
 For detailed documentation, refer to the following:
 
-- [Project Architecture](docs/architecture.md)
-- [Database Schema](docs/database-schema.md)
-- [Document Processing](docs/document-processor.md)
-- [Financial Analysis](docs/financial-analysis.md)
 - [AI Integration](docs/ai-integration.md)
-- [Reporting System](docs/reporting-system.md)
-- [CLI Reference](docs/cli-reference.md)
-- [Testing Guide](tests/README.md)
 - [CI/CD Pipeline](docs/ci_cd.md)
+- [AI Integration Specification](ai-integration-spec.md)
+- [CLI Specification](cli-specification.md)
+- [Database Schema Specification](database-schema-spec.md)
+- [Document Processor Specification](document-processor-spec.md)
+- [Financial Analysis Specification](financial-analysis-spec.md)
+- [Reporting System Specification](reporting-system-spec.md)
+- [Testing Guide](tests/README.md)
 
 ## Development
 
