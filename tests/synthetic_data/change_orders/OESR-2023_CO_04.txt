@@ -1,0 +1,68 @@
+CONSTRUCTION CHANGE ORDER
+
+PROJECT: Oakridge Elementary School Renovation
+         Project ID: OESR-2023
+         123 Oakridge Lane, Springfield, State 12345
+
+CHANGE ORDER NO: 04
+DATE: June 15, 2023
+
+CONTRACTOR: Summit Construction Group
+            789 Builder Avenue
+            Springfield, State 12345
+
+The Contract is changed as follows:
+
+DESCRIPTION OF CHANGE:
+Mechanical room ceiling waterproofing treatment. Apply waterproofing membrane to mechanical room ceiling to protect equipment from potential water infiltration.
+
+JUSTIFICATION:
+During inspection of the mechanical room, signs of previous water infiltration were observed on the ceiling. To protect the new equipment, waterproofing is recommended.
+
+CHANGE IN CONTRACT SUM:
+Original Contract Sum:                $4,250,000.00
+Net change by previously authorized Change Orders:     $32,725.00
+Contract Sum prior to this Change Order:      $4,282,725.00
+Contract Sum will be increased by this Change Order:   $4,850.00
+New Contract Sum including this Change Order:  $4,287,575.00
+
+CHANGE IN CONTRACT TIME:
+Original Contract Completion Date:    August 30, 2024
+Contract Time prior to this Change Order:    532 calendar days
+Contract Time will be increased by:   0 calendar days
+New Contract Completion Date:     August 30, 2024
+
+ITEMIZED COST BREAKDOWN:
+1. Materials:
+   - Waterproofing Membrane:          $2,850.00
+   - Primer and Sealants:             $850.00
+   - Subtotal Materials:              $3,700.00
+
+2. Labor:
+   - Waterproofing Specialist (8 hours @ $110/hr): $880.00
+   - Helper (4 hours @ $65/hr):                   $260.00
+   - Subtotal Labor:                  $1,140.00
+
+3. Overhead and Profit (2%):          $10.00
+
+Total Change Order Amount:            $4,850.00
+
+APPROVALS:
+
+CONTRACTOR:
+By: ____________________________    Date: _____________
+    David Wilson, President
+    Summit Construction Group
+
+ARCHITECT:
+By: ____________________________    Date: _____________
+    Jennifer Parker, Project Architect
+    Horizon Design Associates
+    
+OWNER:
+By: ____________________________    Date: 06/20/2023
+    Michael Chen, Project Manager
+    Springfield School District
+
+NOTES:
+This change order has been approved by the Project Manager under the $5,000 approval threshold defined in the contract.

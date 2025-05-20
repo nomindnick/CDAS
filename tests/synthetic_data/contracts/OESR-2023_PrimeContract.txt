@@ -1,0 +1,107 @@
+STANDARD FORM OF AGREEMENT BETWEEN OWNER AND CONTRACTOR
+FOR THE OAKRIDGE ELEMENTARY SCHOOL RENOVATION PROJECT
+
+AGREEMENT made as of the 15th day of March in the year 2023
+
+BETWEEN the Owner:
+  Springfield School District
+  456 Main Street
+  Springfield, State 12345
+
+and the Contractor:
+  Summit Construction Group
+  789 Builder Avenue
+  Springfield, State 12345
+
+The Project is:
+  Oakridge Elementary School Renovation
+  Project ID: OESR-2023
+  123 Oakridge Lane
+  Springfield, State 12345
+
+The Architect is:
+  Horizon Design Associates
+  321 Design Boulevard
+  Springfield, State 12345
+
+The Owner and Contractor agree as follows:
+
+ARTICLE 1: THE CONTRACT DOCUMENTS
+The Contract Documents consist of this Agreement, the General and Supplementary Conditions, Drawings, Specifications, Addenda issued prior to execution of this Agreement, other documents listed in this Agreement, and Modifications issued after execution of this Agreement; these form the Contract and are as fully a part of the Contract as if attached to this Agreement or repeated herein.
+
+ARTICLE 2: THE WORK OF THIS CONTRACT
+The Contractor shall fully execute the Work described in the Contract Documents for the Oakridge Elementary School Renovation Project, including but not limited to:
+1. Classroom wing renovation (10 classrooms)
+2. New HVAC system installation
+3. Cafeteria expansion
+4. Library modernization
+5. Administrative offices reconfiguration
+6. ADA compliance upgrades
+7. Electrical system upgrades
+8. Roof replacement
+9. Playground equipment installation
+10. Site improvements (parking, landscaping)
+
+ARTICLE 3: DATE OF COMMENCEMENT AND SUBSTANTIAL COMPLETION
+3.1 The date of commencement of the Work shall be March 15, 2023.
+3.2 The Contractor shall achieve Substantial Completion of the entire Work not later than August 30, 2024.
+
+ARTICLE 4: CONTRACT SUM
+4.1 The Owner shall pay the Contractor the Contract Sum of Four Million Two Hundred Fifty Thousand Dollars ($4,250,000.00) for the Contractor's performance of the Contract.
+4.2 The Contract Sum is based upon the following alternates, if any, which are described in the Contract Documents and are hereby accepted by the Owner:
+   None
+
+ARTICLE 5: PROGRESS PAYMENTS
+5.1 Based upon Applications for Payment submitted to the Architect by the Contractor and Certificates for Payment issued by the Architect, the Owner shall make progress payments on account of the Contract Sum to the Contractor as provided below:
+5.2 The period covered by each Application for Payment shall be one calendar month ending on the last day of the month.
+5.3 Provided that an Application for Payment is received by the Architect not later than the 25th day of a month, the Owner shall make payment of the certified amount to the Contractor not later than the 15th day of the following month. If an Application for Payment is received by the Architect after the date fixed above, payment shall be made by the Owner not later than thirty (30) days after the Architect receives the Application for Payment.
+5.4 Each Application for Payment shall be based on the most recent schedule of values submitted by the Contractor. The schedule of values shall allocate the entire Contract Sum among the various portions of the Work. The schedule of values shall be prepared in such form and supported by such data to substantiate its accuracy as the Architect may require.
+5.5 Applications for Payment shall indicate the percentage of completion of each portion of the Work as of the end of the period covered by the Application for Payment.
+5.6 Subject to other provisions of the Contract Documents, the amount of each progress payment shall be computed as follows:
+   5.6.1 Take that portion of the Contract Sum properly allocable to completed Work as determined by multiplying the percentage completion of each portion of the Work by the share of the Contract Sum allocated to that portion of the Work in the schedule of values.
+   5.6.2 Add that portion of the Contract Sum properly allocable to materials and equipment delivered and suitably stored at the site for subsequent incorporation in the completed construction (or, if approved in advance by the Owner, suitably stored off the site at a location agreed upon in writing).
+   5.6.3 Subtract the aggregate of previous payments made by the Owner.
+   5.6.4 Subtract amounts, if any, for which the Architect has withheld or nullified a Certificate for Payment.
+5.7 Retainage of 5% shall be withheld from each progress payment.
+
+ARTICLE 6: FINAL PAYMENT
+Final payment shall be made by the Owner to the Contractor when the Contract has been fully performed, the final Certificate for Payment has been issued by the Architect, and the Owner's board has accepted the Work.
+
+ARTICLE 7: CHANGE ORDERS
+7.1 A Change Order is a written instrument prepared by the Architect and signed by the Owner, Contractor, and Architect, stating their agreement upon all of the following:
+   7.1.1 The change in the Work;
+   7.1.2 The amount of the adjustment, if any, in the Contract Sum; and
+   7.1.3 The extent of the adjustment, if any, in the Contract Time.
+7.2 Changes in the Work may be accomplished after execution of the Contract, and without invalidating the Contract, by Change Order, Construction Change Directive, or order for a minor change in the Work, subject to the limitations stated in this Article 7 and elsewhere in the Contract Documents.
+7.3 The Owner may, without invalidating the Contract, order changes in the Work consisting of additions, deletions, or other revisions, the Contract Sum and Contract Time being adjusted accordingly.
+7.4 Change Order Approval Thresholds:
+   7.4.1 Changes up to $5,000: May be approved by the Project Manager
+   7.4.2 Changes from $5,001 to $25,000: Require approval by the Director of Facilities
+   7.4.3 Changes above $25,000: Require School Board approval
+
+ARTICLE 8: MISCELLANEOUS PROVISIONS
+8.1 Where reference is made in this Agreement to a provision of the General Conditions or another Contract Document, the reference refers to that provision as amended or supplemented by other provisions of the Contract Documents.
+
+ARTICLE 9: SCHEDULE OF CONTRACT VALUES
+9.1 Classroom wing renovation: $1,250,000.00
+9.2 HVAC system installation: $850,000.00
+9.3 Cafeteria expansion: $450,000.00
+9.4 Library modernization: $275,000.00
+9.5 Administrative offices: $325,000.00
+9.6 ADA compliance upgrades: $175,000.00
+9.7 Electrical system upgrades: $425,000.00
+9.8 Roof replacement: $225,000.00
+9.9 Playground equipment: $150,000.00
+9.10 Site improvements: $125,000.00
+
+ARTICLE 10: INSURANCE AND BONDS
+10.1 The Contractor shall purchase and maintain insurance and provide bonds as set forth in the General Conditions.
+
+This Agreement entered into as of the day and year first written above.
+
+________________________          ________________________
+OWNER (Signature)                 CONTRACTOR (Signature)
+
+Dr. Robert Thompson              Mr. David Wilson
+Superintendent                   President
+Springfield School District      Summit Construction Group

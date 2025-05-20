@@ -1,0 +1,30 @@
+# Core dependencies
+sqlalchemy==2.0.27
+alembic==1.13.1
+click==8.1.7
+pydantic==2.6.1
+
+# Document processing
+pdfplumber==0.10.3
+opencv-python==4.9.0.80
+pytesseract==0.3.10
+pandas==2.1.4
+openpyxl==3.1.2
+python-docx==1.1.0
+
+# AI integration
+openai==1.12.0
+langchain==0.1.4
+numpy==1.26.3
+scikit-learn==1.4.0
+
+# Utilities
+tqdm==4.66.1
+python-dotenv==1.0.1
+
+# Development tools
+pytest==7.4.3
+pytest-cov==4.1.0
+black==23.12.0
+flake8==6.1.0
+mypy==1.8.0

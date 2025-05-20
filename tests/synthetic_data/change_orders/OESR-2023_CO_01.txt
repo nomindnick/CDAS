@@ -1,0 +1,68 @@
+CONSTRUCTION CHANGE ORDER
+
+PROJECT: Oakridge Elementary School Renovation
+         Project ID: OESR-2023
+         123 Oakridge Lane, Springfield, State 12345
+
+CHANGE ORDER NO: 01
+DATE: May 18, 2023
+
+CONTRACTOR: Summit Construction Group
+            789 Builder Avenue
+            Springfield, State 12345
+
+The Contract is changed as follows:
+
+DESCRIPTION OF CHANGE:
+Electrical system upgrade to include replacement of existing electrical panel in the main mechanical room with a new 800A service panel to accommodate increased capacity requirements for the new HVAC system. The existing panel was found to be insufficient for the new loads and does not meet current code requirements.
+
+JUSTIFICATION:
+During demolition, it was discovered that the existing electrical panel is rated for 400A service, which is insufficient for the new HVAC equipment specified in the contract documents. The panel also shows signs of deterioration and does not meet current electrical code requirements for the intended loads.
+
+CHANGE IN CONTRACT SUM:
+Original Contract Sum:                $4,250,000.00
+Net change by previously authorized Change Orders:     $0.00
+Contract Sum prior to this Change Order:      $4,250,000.00
+Contract Sum will be increased by this Change Order:   $27,850.00
+New Contract Sum including this Change Order:  $4,277,850.00
+
+CHANGE IN CONTRACT TIME:
+Original Contract Completion Date:    August 30, 2024
+Contract Time prior to this Change Order:    532 calendar days
+Contract Time will be increased by:   0 calendar days
+New Contract Completion Date:     August 30, 2024
+
+ITEMIZED COST BREAKDOWN:
+1. Materials:
+   - 800A Service Panel:          $8,750.00
+   - Circuit Breakers:            $3,250.00
+   - Conduit and Wiring:          $4,850.00
+   - Subtotal Materials:          $16,850.00
+
+2. Labor:
+   - Electrician (48 hours @ $125/hr):     $6,000.00
+   - Helper (48 hours @ $75/hr):          $3,600.00
+   - Subtotal Labor:              $9,600.00
+
+3. Equipment Rental:                  $400.00
+
+4. Overhead and Profit (5%):          $1,000.00
+
+Total Change Order Amount:            $27,850.00
+
+APPROVALS:
+
+CONTRACTOR:
+By: ____________________________    Date: _____________
+    David Wilson, President
+    Summit Construction Group
+
+ARCHITECT:
+By: ____________________________    Date: _____________
+    Jennifer Parker, Project Architect
+    Horizon Design Associates
+    
+OWNER:
+By: ____________________________    Date: _____________
+    Michael Chen, Project Manager
+    Springfield School District

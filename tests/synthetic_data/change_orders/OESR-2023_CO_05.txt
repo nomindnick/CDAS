@@ -1,0 +1,68 @@
+CONSTRUCTION CHANGE ORDER
+
+PROJECT: Oakridge Elementary School Renovation
+         Project ID: OESR-2023
+         123 Oakridge Lane, Springfield, State 12345
+
+CHANGE ORDER NO: 05
+DATE: June 20, 2023
+
+CONTRACTOR: Summit Construction Group
+            789 Builder Avenue
+            Springfield, State 12345
+
+The Contract is changed as follows:
+
+DESCRIPTION OF CHANGE:
+Structural steel reinforcement for mechanical equipment mounting. Install supplemental structural steel members in the mechanical room to properly support rooftop equipment connections.
+
+JUSTIFICATION:
+Based on structural engineer's review of the as-built conditions, additional reinforcement is required at the connection points between the mechanical room and the new rooftop equipment. The existing steel members do not provide adequate support for the equipment load paths.
+
+CHANGE IN CONTRACT SUM:
+Original Contract Sum:                $4,250,000.00
+Net change by previously authorized Change Orders:     $37,575.00
+Contract Sum prior to this Change Order:      $4,287,575.00
+Contract Sum will be increased by this Change Order:   $4,825.00
+New Contract Sum including this Change Order:  $4,292,400.00
+
+CHANGE IN CONTRACT TIME:
+Original Contract Completion Date:    August 30, 2024
+Contract Time prior to this Change Order:    532 calendar days
+Contract Time will be increased by:   0 calendar days
+New Contract Completion Date:     August 30, 2024
+
+ITEMIZED COST BREAKDOWN:
+1. Materials:
+   - Structural Steel Members:        $2,750.00
+   - Fasteners and Connectors:        $675.00
+   - Subtotal Materials:              $3,425.00
+
+2. Labor:
+   - Structural Steel Worker (8 hours @ $135/hr): $1,080.00
+   - Helper (4 hours @ $75/hr):                  $300.00
+   - Subtotal Labor:                  $1,380.00
+
+3. Overhead and Profit (0.5%):        $20.00
+
+Total Change Order Amount:            $4,825.00
+
+APPROVALS:
+
+CONTRACTOR:
+By: ____________________________    Date: _____________
+    David Wilson, President
+    Summit Construction Group
+
+ARCHITECT:
+By: ____________________________    Date: _____________
+    Jennifer Parker, Project Architect
+    Horizon Design Associates
+    
+OWNER:
+By: ____________________________    Date: 06/25/2023
+    Michael Chen, Project Manager
+    Springfield School District
+
+NOTES:
+This change order has been approved by the Project Manager under the $5,000 approval threshold defined in the contract. The structural engineer has certified that this reinforcement is necessary based on as-built conditions.

@@ -1,0 +1,37 @@
+FROM: Michael Chen, Project Manager
+      Springfield School District
+      
+TO:   David Wilson, President
+      Summit Construction Group
+      
+DATE: June 3, 2023
+
+SUBJECT: Change Order #2 - Structural Reinforcement Request
+
+Dear Mr. Wilson,
+
+I am writing in reference to Change Order #2 regarding the structural reinforcement for HVAC equipment support in the mechanical room, submitted on May 25, 2023.
+
+After consultation with our structural engineer and review of the project documents, we find that we cannot approve this change order as submitted. Our concerns are as follows:
+
+1. The structural issues identified should have been anticipated during the bidding phase. These conditions were visible and accessible during the mandatory pre-bid site visit.
+
+2. The 10% overhead and profit markup exceeds the 5% allowed in the contract.
+
+3. The material costs appear excessive compared to current market rates.
+
+However, we acknowledge that some reinforcement may be necessary to safely support the HVAC equipment. We would be willing to reconsider a revised change order that:
+
+1. Reduces the overall cost to reflect appropriate material pricing
+2. Applies the contractual 5% overhead and profit
+3. Provides a more detailed structural analysis justifying the specific reinforcement required
+
+Please note that any work performed related to this change order is not authorized at this time. Any costs incurred before receiving written approval will be at Summit Construction Group's own risk.
+
+We look forward to receiving a revised proposal that addresses these concerns.
+
+Sincerely,
+
+Michael Chen
+Project Manager
+Springfield School District

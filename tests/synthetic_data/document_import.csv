@@ -1,0 +1,16 @@
+file_path,doc_type,party,project_id,notes
+/home/nick/Projects/CDAS/tests/synthetic_data/contracts/OESR-2023_PrimeContract.txt,contract,owner,OESR-2023,Prime Contract
+/home/nick/Projects/CDAS/tests/synthetic_data/payment_apps/OESR-2023_PayApp_01.txt,payment_app,contractor,OESR-2023,March-April 2023
+/home/nick/Projects/CDAS/tests/synthetic_data/payment_apps/OESR-2023_PayApp_02.txt,payment_app,contractor,OESR-2023,May 2023
+/home/nick/Projects/CDAS/tests/synthetic_data/payment_apps/OESR-2023_PayApp_03.txt,payment_app,contractor,OESR-2023,June 2023
+/home/nick/Projects/CDAS/tests/synthetic_data/payment_apps/OESR-2023_PayApp_04.txt,payment_app,contractor,OESR-2023,July 2023
+/home/nick/Projects/CDAS/tests/synthetic_data/change_orders/OESR-2023_CO_01.txt,change_order,contractor,OESR-2023,Electrical Panel Upgrade
+/home/nick/Projects/CDAS/tests/synthetic_data/change_orders/OESR-2023_CO_02.txt,change_order,contractor,OESR-2023,Structural Reinforcement (Rejected)
+/home/nick/Projects/CDAS/tests/synthetic_data/change_orders/OESR-2023_CO_03.txt,change_order,contractor,OESR-2023,Equipment Mounting Pad
+/home/nick/Projects/CDAS/tests/synthetic_data/change_orders/OESR-2023_CO_04.txt,change_order,contractor,OESR-2023,Waterproofing Treatment
+/home/nick/Projects/CDAS/tests/synthetic_data/change_orders/OESR-2023_CO_05.txt,change_order,contractor,OESR-2023,Structural Steel Support
+/home/nick/Projects/CDAS/tests/synthetic_data/change_orders/OESR-2023_CO_06.txt,change_order,contractor,OESR-2023,Seismic Bracing
+/home/nick/Projects/CDAS/tests/synthetic_data/correspondence/OESR-2023_CORR_01.txt,correspondence,owner,OESR-2023,Rejection of CO #2
+/home/nick/Projects/CDAS/tests/synthetic_data/correspondence/OESR-2023_CORR_02.txt,correspondence,architect,OESR-2023,Structural Requirements
+/home/nick/Projects/CDAS/tests/synthetic_data/correspondence/OESR-2023_CORR_03.txt,correspondence,contractor,OESR-2023,Revised Approach
+/home/nick/Projects/CDAS/tests/synthetic_data/invoices/OESR-2023_INV_Central_Mechanical.txt,invoice,subcontractor,OESR-2023,Mechanical Subcontractor Invoice

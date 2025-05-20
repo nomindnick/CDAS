@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cdas"
+version = "0.1.0"
+description = "Construction Document Analysis System"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+dependencies = [
+    "sqlalchemy==2.0.27",
+    "alembic==1.13.1",
+    "click==8.1.7",
+    "pydantic==2.6.1",
+    "pdfplumber==0.10.3",
+    "opencv-python==4.9.0.80",
+    "pytesseract==0.3.10",
+    "pandas==2.1.4",
+    "openpyxl==3.1.2",
+    "python-docx==1.1.0",
+    "openai==1.12.0",
+    "langchain==0.1.4",
+    "numpy==1.26.3",
+    "scikit-learn==1.4.0",
+    "tqdm==4.66.1",
+    "python-dotenv==1.0.1",
+]
+
+[project.scripts]
+cdas = "cdas.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest==7.4.3",
+    "pytest-cov==4.1.0",
+    "black==23.12.0",
+    "flake8==6.1.0",
+    "mypy==1.8.0",
+    "tox",
+]
+
+[tool.setuptools]
+packages = ["cdas"]
+
+[tool.black]
+line-length = 88
+target-version = ["py38", "py39", "py310"]
+include = '\.pyi?$'
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = "E203"
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "venv",
+]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+python_classes = "Test*"
+addopts = "--cov=cdas --cov-report=term-missing"

@@ -1,0 +1,88 @@
+APPLICATION AND CERTIFICATE FOR PAYMENT
+
+PROJECT: Oakridge Elementary School Renovation
+         Project ID: OESR-2023
+         123 Oakridge Lane, Springfield, State 12345
+
+APPLICATION NO: 04
+PERIOD FROM: July 1, 2023
+PERIOD TO: July 31, 2023
+
+CONTRACTOR: Summit Construction Group
+            789 Builder Avenue
+            Springfield, State 12345
+
+CONTRACT DATE: March 15, 2023
+CONTRACT SUM: $4,250,000.00
+CHANGE ORDERS TO DATE: $47,375.00
+CONTRACT SUM TO DATE: $4,297,375.00
+
+COMPLETED TO DATE: $1,502,831.25
+RETAINAGE (5%): $75,141.56
+TOTAL EARNED LESS RETAINAGE: $1,427,689.69
+LESS PREVIOUS CERTIFICATES: $854,759.17
+CURRENT PAYMENT DUE: $572,930.52
+
+CERTIFICATE FOR PAYMENT
+
+The undersigned Contractor certifies that the Work covered by this Application for Payment has been completed in accordance with the Contract Documents, that all amounts have been paid by the Contractor for Work for which previous Certificates for Payment were issued and payments received from the Owner, and that current payment shown herein is now due.
+
+CONTRACTOR: Summit Construction Group
+BY: David Wilson, President
+DATE: August 5, 2023
+
+ARCHITECT'S CERTIFICATE FOR PAYMENT
+
+In accordance with the Contract Documents, based on on-site observations and the data comprising this application, the Architect certifies to the Owner that to the best of the Architect's knowledge, information and belief the Work has progressed as indicated, the quality of the Work is in accordance with the Contract Documents, and the Contractor is entitled to payment of the AMOUNT CERTIFIED.
+
+AMOUNT CERTIFIED: $572,930.52
+
+ARCHITECT: Horizon Design Associates
+BY: Jennifer Parker, Project Architect
+DATE: August 10, 2023
+
+CONTINUATION SHEET
+
+ITEM | DESCRIPTION | SCHEDULED VALUE | WORK COMPLETED | MATERIALS STORED | TOTAL COMPLETED & STORED | % COMPLETE | BALANCE TO FINISH | RETAINAGE
+-----|-------------|-----------------|----------------|-------------------|--------------------------|------------|-------------------|----------
+1.0 | Mobilization | $85,000.00 | $85,000.00 | $0.00 | $85,000.00 | 100% | $0.00 | $4,250.00
+2.0 | Site Preparation | $42,500.00 | $42,500.00 | $0.00 | $42,500.00 | 100% | $0.00 | $2,125.00
+3.0 | Demolition - Classroom Wing | $65,000.00 | $65,000.00 | $0.00 | $65,000.00 | 100% | $0.00 | $3,250.00
+4.0 | Temporary Facilities | $25,500.00 | $25,500.00 | $0.00 | $25,500.00 | 100% | $0.00 | $1,275.00
+5.0 | Material Delivery - HVAC Equipment | $35,000.00 | $35,000.00 | $0.00 | $35,000.00 | 100% | $0.00 | $1,750.00
+5.1 | Material Delivery - HVAC Equipment (Additional) | $35,000.00 | $35,000.00 | $0.00 | $35,000.00 | 100% | $0.00 | $1,750.00
+6.0 | General Conditions | $42,500.00 | $25,500.00 | $0.00 | $25,500.00 | 60% | $17,000.00 | $1,275.00
+7.0 | Classroom Wing Construction | $1,250,000.00 | $625,000.00 | $0.00 | $625,000.00 | 50% | $625,000.00 | $31,250.00
+8.0 | HVAC System | $850,000.00 | $340,000.00 | $0.00 | $340,000.00 | 40% | $510,000.00 | $17,000.00
+9.0 | Cafeteria Expansion | $450,000.00 | $90,000.00 | $0.00 | $90,000.00 | 20% | $360,000.00 | $4,500.00
+10.0 | Library Modernization | $275,000.00 | $13,750.00 | $0.00 | $13,750.00 | 5% | $261,250.00 | $687.50
+11.0 | Administrative Offices | $325,000.00 | $16,250.00 | $0.00 | $16,250.00 | 5% | $308,750.00 | $812.50
+12.0 | ADA Compliance Upgrades | $175,000.00 | $17,500.00 | $0.00 | $17,500.00 | 10% | $157,500.00 | $875.00
+13.0 | Electrical System Upgrades | $425,000.00 | $63,750.00 | $0.00 | $63,750.00 | 15% | $361,250.00 | $3,187.50
+14.0 | Roof Replacement | $225,000.00 | $22,500.00 | $0.00 | $22,500.00 | 10% | $202,500.00 | $1,125.00
+15.0 | Playground Equipment | $150,000.00 | $0.00 | $0.00 | $0.00 | 0% | $150,000.00 | $0.00
+16.0 | Site Improvements | $125,000.00 | $0.00 | $0.00 | $0.00 | 0% | $125,000.00 | $0.00
+17.0 | Test and Balance | $25,000.00 | $0.00 | $0.00 | $0.00 | 0% | $25,000.00 | $0.00
+18.0 | Change Order #1 - Electrical Panel Upgrade | $27,850.00 | $27,850.00 | $0.00 | $27,850.00 | 100% | $0.00 | $1,392.50
+19.0 | Mechanical Room Ceiling Reinforcement | $9,725.00 | $4,862.50 | $0.00 | $4,862.50 | 50% | $4,862.50 | $243.13
+20.0 | HVAC Support - Steel Materials | $12,825.00 | $6,412.50 | $0.00 | $6,412.50 | 50% | $6,412.50 | $320.63
+21.0 | HVAC Support - Installation Labor | $8,800.00 | $4,400.00 | $0.00 | $4,400.00 | 50% | $4,400.00 | $220.00
+22.0 | HVAC Support - Equipment | $1,200.00 | $600.00 | $0.00 | $600.00 | 50% | $600.00 | $30.00
+23.0 | Structural Support Miscellaneous | $4,850.00 | $2,425.00 | $0.00 | $2,425.00 | 50% | $2,425.00 | $121.25
+24.0 | Electrical Room Modifications | $4,825.00 | $4,825.00 | $0.00 | $4,825.00 | 100% | $0.00 | $241.25
+25.0 | ADA Door Hardware | $9,675.00 | $9,675.00 | $0.00 | $9,675.00 | 100% | $0.00 | $483.75
+26.0 | Waterproofing - Classroom Wing | $12,500.00 | $6,250.00 | $0.00 | $6,250.00 | 50% | $6,250.00 | $312.50
+27.0 | Mechanical Room Equipment Pad | $4,875.00 | $4,875.00 | $0.00 | $4,875.00 | 100% | $0.00 | $243.75
+28.0 | Site Drainage Modifications | $7,825.00 | $3,912.50 | $0.00 | $3,912.50 | 50% | $3,912.50 | $195.63
+29.0 | Cafeteria Expansion - Additional Demo | $4,250.00 | $4,250.00 | $0.00 | $4,250.00 | 100% | $0.00 | $212.50
+30.0 | Change Order #3 - Equipment Mounting Pad | $4,875.00 | $4,875.00 | $0.00 | $4,875.00 | 100% | $0.00 | $243.75
+31.0 | Change Order #4 - Waterproofing Treatment | $4,850.00 | $4,850.00 | $0.00 | $4,850.00 | 100% | $0.00 | $242.50
+32.0 | Change Order #5 - Structural Steel Support | $4,825.00 | $4,825.00 | $0.00 | $4,825.00 | 100% | $0.00 | $241.25
+33.0 | Change Order #6 - Seismic Bracing | $4,975.00 | $4,975.00 | $0.00 | $4,975.00 | 100% | $0.00 | $248.75
+34.0 | Vibration Isolation - HVAC Equipment | $4,500.00 | $4,500.00 | $0.00 | $4,500.00 | 100% | $0.00 | $225.00
+35.0 | Structural Engineering Services | $2,500.00 | $2,500.00 | $0.00 | $2,500.00 | 100% | $0.00 | $125.00
+36.0 | Additional HVAC Ductwork | $18,750.00 | $9,375.00 | $0.00 | $9,375.00 | 50% | $9,375.00 | $468.75
+37.0 | Structural Support Labor (Supplemental) | $8,800.00 | $4,400.00 | $0.00 | $4,400.00 | 50% | $4,400.00 | $220.00
+38.0 | Structural Support Materials (Supplemental) | $9,725.00 | $4,862.50 | $0.00 | $4,862.50 | 50% | $4,862.50 | $243.13
+
+TOTAL | $4,297,375.00 | $1,502,831.25 | $0.00 | $1,502,831.25 | 35.0% | $2,794,543.75 | $75,141.56

@@ -1,0 +1,39 @@
+FROM: David Wilson, President
+      Summit Construction Group
+      
+TO:   Michael Chen, Project Manager
+      Springfield School District
+      
+CC:   Jennifer Parker, Project Architect
+      Horizon Design Associates
+      
+DATE: June 14, 2023
+
+SUBJECT: Revised Approach to Structural Support Requirements
+
+Dear Mr. Chen,
+
+Thank you for your letter dated June 3, 2023, regarding Change Order #2 for structural reinforcement in the mechanical room. We appreciate your feedback and have carefully considered the concerns you raised.
+
+After consultation with our engineers and in light of Ms. Parker's recent observations (June 10 correspondence), we propose a revised approach to address the structural requirements while respecting the contractual limitations and budget constraints.
+
+Rather than implementing the comprehensive reinforcement solution initially proposed, we recommend addressing the structural needs through a phased approach with multiple smaller modifications that can be implemented as the work progresses. This approach will:
+
+1. Allow for more precise identification of necessary reinforcement based on actual equipment installation
+2. Provide better cost control and transparency
+3. Minimize disruption to the overall project schedule
+4. Ensure all overhead and profit markups remain within contractual limits
+
+We have already prepared several smaller change order requests that break down the original scope into more manageable components. Each of these will fall below the $5,000 threshold for Project Manager approval, which should expedite the review process and keep the project moving forward.
+
+The first of these change orders (CO #3) addresses the concrete equipment pad, which is the most immediate need. Subsequent change orders will focus on waterproofing (CO #4), primary structural reinforcement (CO #5), and seismic bracing (CO #6).
+
+I want to emphasize that these modifications are essential for the safe and proper installation of the specified HVAC equipment. We are proceeding with this work based on the architect's recommendation and structural engineering requirements.
+
+We appreciate your understanding and cooperation in addressing these unforeseen conditions.
+
+Sincerely,
+
+David Wilson
+President
+Summit Construction Group

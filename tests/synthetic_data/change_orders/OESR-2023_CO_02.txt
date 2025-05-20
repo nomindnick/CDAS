@@ -1,0 +1,71 @@
+CONSTRUCTION CHANGE ORDER
+
+PROJECT: Oakridge Elementary School Renovation
+         Project ID: OESR-2023
+         123 Oakridge Lane, Springfield, State 12345
+
+CHANGE ORDER NO: 02
+DATE: May 25, 2023
+
+CONTRACTOR: Summit Construction Group
+            789 Builder Avenue
+            Springfield, State 12345
+
+The Contract is changed as follows:
+
+DESCRIPTION OF CHANGE:
+Additional structural reinforcement for HVAC equipment support in the mechanical room ceiling. The existing structure requires additional steel members to properly support the weight of the new rooftop HVAC units.
+
+JUSTIFICATION:
+During inspection of the mechanical room ceiling structure, it was determined that additional reinforcement is required to safely support the new HVAC units. The original structural drawings did not accurately reflect the as-built conditions.
+
+CHANGE IN CONTRACT SUM:
+Original Contract Sum:                $4,250,000.00
+Net change by previously authorized Change Orders:     $27,850.00
+Contract Sum prior to this Change Order:      $4,277,850.00
+Contract Sum will be increased by this Change Order:   $24,825.00
+New Contract Sum including this Change Order:  $4,302,675.00
+
+CHANGE IN CONTRACT TIME:
+Original Contract Completion Date:    August 30, 2024
+Contract Time prior to this Change Order:    532 calendar days
+Contract Time will be increased by:   0 calendar days
+New Contract Completion Date:     August 30, 2024
+
+ITEMIZED COST BREAKDOWN:
+1. Materials:
+   - Structural Steel:            $9,725.00
+   - Fasteners and Connectors:    $1,850.00
+   - Miscellaneous Materials:     $1,250.00
+   - Subtotal Materials:          $12,825.00
+
+2. Labor:
+   - Structural Steel Worker (40 hours @ $135/hr):  $5,400.00
+   - Helper (40 hours @ $85/hr):                   $3,400.00
+   - Subtotal Labor:              $8,800.00
+
+3. Equipment Rental:              $1,200.00
+
+4. Overhead and Profit (10%):     $2,000.00
+
+Total Change Order Amount:        $24,825.00
+
+APPROVALS:
+
+CONTRACTOR:
+By: ____________________________    Date: _____________
+    David Wilson, President
+    Summit Construction Group
+
+ARCHITECT:
+By: ____________________________    Date: _____________
+    Jennifer Parker, Project Architect
+    Horizon Design Associates
+    
+OWNER:
+By: REJECTED                        Date: 06/02/2023
+    Michael Chen, Project Manager
+    Springfield School District
+
+REASON FOR REJECTION:
+The structural reinforcement should have been anticipated by the contractor during the bidding process. The existing conditions were visible and accessible during mandatory pre-bid site visits. Additionally, the overhead and profit percentage exceeds the 5% allowed in the contract.

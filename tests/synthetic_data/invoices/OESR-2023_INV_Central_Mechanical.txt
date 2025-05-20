@@ -1,0 +1,44 @@
+INVOICE
+
+Central Mechanical Inc.
+456 Industry Parkway
+Springfield, State 12345
+
+BILL TO:
+Summit Construction Group
+789 Builder Avenue
+Springfield, State 12345
+
+INVOICE #: CM-2023-156
+DATE: June 30, 2023
+DUE DATE: July 30, 2023
+PROJECT: Oakridge Elementary School Renovation (OESR-2023)
+
+---------------------------------------------------------------------------------
+DESCRIPTION                                           QUANTITY   RATE     AMOUNT
+---------------------------------------------------------------------------------
+HVAC Equipment Installation - Phase 1                    1    $72,500.00  $72,500.00
+Mechanical Room Equipment Pad                            1     $4,875.00   $4,875.00
+Mechanical Room Waterproofing                            1     $4,850.00   $4,850.00
+Structural Steel Installation - Equipment Support        1     $4,825.00   $4,825.00
+Seismic Bracing and Connections                          1     $4,975.00   $4,975.00
+Structural Engineer Site Visits                          2     $1,250.00   $2,500.00
+Ductwork Installation - Main Mechanical Room             1    $18,750.00  $18,750.00
+Supplemental Steel Support Materials                     1     $9,725.00   $9,725.00
+Labor - Structural Support Installation                  1     $8,800.00   $8,800.00
+Equipment Rental - Structural Support                    1     $1,200.00   $1,200.00
+Specialized Vibration Isolation Mounts                  12       $375.00   $4,500.00
+---------------------------------------------------------------------------------
+                                                          SUBTOTAL:      $138,000.00
+                                                          TAX (6%):        $8,280.00
+                                                          TOTAL:         $146,280.00
+
+PAYMENT TERMS: Net 30 days
+Make all checks payable to Central Mechanical Inc.
+
+NOTES:
+1. Please include invoice number on payment.
+2. A 2% late fee will be charged on overdue balances.
+3. For questions concerning this invoice, contact accounting@centralmechanical.com or call (555) 123-4567.
+
+Thank you for your business!

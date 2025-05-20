@@ -1,0 +1,30 @@
+FROM: Jennifer Parker, Project Architect
+      Horizon Design Associates
+      
+TO:   Michael Chen, Project Manager
+      Springfield School District
+      
+CC:   David Wilson, President
+      Summit Construction Group
+      
+DATE: June 10, 2023
+
+SUBJECT: HVAC Equipment Structural Support Requirements
+
+Dear Mr. Chen,
+
+During our site visit yesterday, we observed the ongoing work related to the HVAC system installation in the mechanical room. I want to bring to your attention some structural concerns that our team identified.
+
+After reviewing the as-built conditions and the specifications of the HVAC equipment being installed, our structural engineer has determined that additional reinforcement is necessary to adequately support the equipment. The existing ceiling structure does not appear to have sufficient capacity to handle the load and potential vibration from the new units.
+
+While I understand that Change Order #2 related to structural reinforcement was recently rejected, I feel obligated to inform you that some form of structural modification will be required to safely install the specified equipment. This is a safety and code compliance issue that needs to be addressed regardless of the contractual considerations.
+
+Our recommendation is to work with Summit Construction Group to develop a revised approach that meets both the structural requirements and budgetary constraints. Perhaps breaking the work into smaller, more clearly defined components would help in evaluating the necessity and value of each element.
+
+Please let me know if you would like us to arrange a meeting with all parties to discuss potential solutions to this issue.
+
+Sincerely,
+
+Jennifer Parker, AIA
+Project Architect
+Horizon Design Associates
