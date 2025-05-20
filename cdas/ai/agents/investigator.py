@@ -13,15 +13,54 @@ logger = logging.getLogger(__name__)
 
 
 class InvestigatorAgent:
-    """Agent that investigates financial discrepancies."""
+    """Agent that investigates financial discrepancies in construction disputes.
+    
+    This agent uses LLMs with tool-calling capabilities to investigate complex financial
+    questions by searching documents, analyzing line items, identifying suspicious patterns,
+    and executing custom SQL queries.
+    
+    The agent operates in an iterative loop, using tools to gather information until it can
+    generate a comprehensive final report based on the evidence collected.
+    
+    Attributes:
+        db_session: Database session for accessing construction document data
+        llm: LLM manager for interacting with language models
+        config (Dict[str, Any]): Configuration settings for the agent
+        tools (List[Dict[str, Any]]): List of available tools for the agent to use
+        system_prompt (str): System prompt that defines the agent's behavior
+    
+    Examples:
+        >>> from cdas.db.session import get_session
+        >>> from cdas.ai.llm import LLMManager
+        >>> from cdas.ai.agents.investigator import InvestigatorAgent
+        >>> 
+        >>> session = get_session()
+        >>> llm_manager = LLMManager()
+        >>> 
+        >>> # Initialize investigator agent
+        >>> agent = InvestigatorAgent(session, llm_manager)
+        >>> 
+        >>> # Investigate a question
+        >>> results = agent.investigate(
+        ...     "What evidence suggests the contractor double-billed for HVAC equipment?"
+        ... )
+        >>> 
+        >>> # Print the final report
+        >>> print(results['final_report'])
+    """
     
     def __init__(self, db_session, llm_manager, config: Optional[Dict[str, Any]] = None):
         """Initialize the investigator agent.
         
         Args:
-            db_session: Database session
-            llm_manager: LLM manager
-            config: Optional configuration dictionary
+            db_session: Database session for accessing construction document data
+            llm_manager: LLM manager for interacting with language models
+            config (Optional[Dict[str, Any]]): Configuration dictionary with the following options:
+                - max_iterations (int): Maximum number of tool-calling iterations (default: 10)
+                - additional configuration options can be added as needed
+        
+        Note:
+            The agent uses the mock mode setting from the LLM manager if it is enabled.
         """
         self.db_session = db_session
         self.llm = llm_manager
@@ -36,12 +75,44 @@ class InvestigatorAgent:
     def investigate(self, question: str, context: Optional[str] = None) -> Dict[str, Any]:
         """Investigate a question about the construction dispute.
         
+        This method runs the investigator agent to answer a complex financial question
+        about a construction dispute. The agent will use its available tools to search 
+        for relevant information, analyze financial patterns, and compile evidence from
+        construction documents.
+        
+        In mock mode (detected from the LLM manager), the agent will return simulated
+        results without making actual database or API calls.
+        
         Args:
-            question: Question to investigate
-            context: Optional context information
+            question (str): The question to investigate about the construction dispute
+            context (Optional[str]): Additional context information to help guide the
+                investigation, such as relevant document IDs, parties involved, or
+                specific areas to focus on
             
         Returns:
-            Investigation results
+            Dict[str, Any]: Dictionary containing:
+                - 'investigation_steps' (List[str]): Detailed steps taken during the investigation
+                - 'final_report' (str): Comprehensive report summarizing findings with evidence
+                - 'error' (str, optional): Error message if an exception occurred
+        
+        Raises:
+            Exception: If an error occurs during the investigation process, it's caught,
+                logged, and returned in the result dictionary under the 'error' key
+        
+        Examples:
+            >>> agent = InvestigatorAgent(session, llm_manager)
+            >>> 
+            >>> # Simple investigation
+            >>> results = agent.investigate("Were there any change orders rejected but later included in payment applications?")
+            >>> 
+            >>> # Investigation with context
+            >>> context = "Focus on HVAC-related items and examine payment applications #3 and #4."
+            >>> results = agent.investigate("Is there evidence of duplicate billing?", context)
+            >>> 
+            >>> # Access investigation steps and final report
+            >>> for step in results['investigation_steps']:
+            ...     print(f"Investigation step: {step}")
+            >>> print(f"Final report:\\n{results['final_report']}")
         """
         # Check if we're in mock mode (via LLM manager)
         is_mock_mode = getattr(self.llm, 'mock_mode', False)
@@ -115,7 +186,19 @@ class InvestigatorAgent:
             }
     
     def _initialize_tools(self) -> List[Dict[str, Any]]:
-        """Initialize agent tools."""
+        """Initialize agent tools.
+        
+        This method creates a list of tool definitions that the agent can use during
+        investigations. The tools are defined in the OpenAI function-calling format,
+        which is converted as needed for different LLM providers.
+        
+        Returns:
+            List[Dict[str, Any]]: List of tool definitions with the following tools:
+                - search_documents: Search for documents matching specific criteria
+                - search_line_items: Search for financial line items with filters
+                - find_suspicious_patterns: Identify potentially suspicious financial patterns
+                - run_sql_query: Execute custom SQL queries for advanced analysis
+        """
         # Define tools for the agent
         tools = [
             {
@@ -213,7 +296,15 @@ class InvestigatorAgent:
         return tools
     
     def _load_system_prompt(self) -> str:
-        """Load system prompt for the agent."""
+        """Load system prompt for the agent.
+        
+        This method returns the system prompt that defines the agent's behavior and
+        instructions. The system prompt establishes the agent as a financial investigator
+        specialized in construction disputes, and outlines the investigation process.
+        
+        Returns:
+            str: System prompt that guides the agent's behavior and investigation approach
+        """
         return """You are a Financial Investigator Agent for construction disputes. Your job is to investigate financial discrepancies between a school district and a contractor. You have access to various tools to help you analyze documents, find patterns, and identify suspicious activities.
 
 Follow these steps in your investigation:
@@ -227,7 +318,18 @@ Follow these steps in your investigation:
 Always cite specific evidence from documents when making claims. Be thorough and methodical in your investigation. Your goal is to uncover the truth about financial matters in the construction dispute."""
     
     def _prepare_prompt(self, question: str, context: Optional[str] = None) -> str:
-        """Prepare initial prompt for the agent."""
+        """Prepare initial prompt for the agent.
+        
+        This method formats the investigation question and optional context information
+        into a prompt that initiates the agent's investigation process.
+        
+        Args:
+            question (str): The question to investigate
+            context (Optional[str]): Additional context information (if provided)
+            
+        Returns:
+            str: Formatted prompt to start the investigation
+        """
         prompt = f"I need you to investigate the following question about a construction dispute:\n\n{question}\n"
         
         if context:
@@ -238,7 +340,24 @@ Always cite specific evidence from documents when making claims. Be thorough and
         return prompt
     
     def _execute_tool_calls(self, tool_calls) -> Dict[str, str]:
-        """Execute tool calls and return results."""
+        """Execute tool calls and return results.
+        
+        This method processes and executes the tool calls made by the language model during
+        the investigation. It handles different formats of tool calls from different LLM
+        providers and maps them to the appropriate implementation methods.
+        
+        In mock mode, it returns predefined mock results instead of making actual database calls.
+        
+        Args:
+            tool_calls: List of tool call objects from the LLM (format depends on provider)
+            
+        Returns:
+            Dict[str, str]: Dictionary mapping function names to their execution results as strings
+        
+        Note:
+            The method dynamically handles different tool call formats from Anthropic and OpenAI,
+            extracting the function name and arguments appropriately in each case.
+        """
         results = {}
         
         # Check if we're in mock mode (via LLM manager)
@@ -324,7 +443,25 @@ Always cite specific evidence from documents when making claims. Be thorough and
         return results
     
     def _search_documents(self, arguments: Dict[str, Any]) -> str:
-        """Search for documents matching criteria."""
+        """Search for documents matching criteria.
+        
+        This method queries the database for documents that match the specified search criteria.
+        It performs a full-text search on document content and can filter by document type and party.
+        The results include contextual content snippets showing the matching text.
+        
+        Args:
+            arguments (Dict[str, Any]): Dictionary containing search parameters:
+                - query (str): Text to search for in document content
+                - doc_type (str, optional): Filter by document type (e.g., 'change_order', 'payment_app')
+                - party (str, optional): Filter by party (e.g., 'contractor', 'district')
+            
+        Returns:
+            str: Formatted string of search results with document metadata and relevant content snippets
+            
+        Raises:
+            Exception: If an error occurs during the database query, it's caught, logged,
+                and an error message is returned
+        """
         try:
             query = arguments.get('query', '')
             doc_type = arguments.get('doc_type')
@@ -422,7 +559,30 @@ Always cite specific evidence from documents when making claims. Be thorough and
             return f"Error searching documents: {str(e)}"
     
     def _search_line_items(self, arguments: Dict[str, Any]) -> str:
-        """Search for line items matching criteria."""
+        """Search for line items matching criteria.
+        
+        This method searches the database for financial line items that match the specified criteria.
+        It can filter by description keywords and amount ranges, allowing precise identification of
+        specific financial entries across different documents.
+        
+        Args:
+            arguments (Dict[str, Any]): Dictionary containing search parameters:
+                - description (str, optional): Text to search for in line item descriptions
+                - min_amount (float, optional): Minimum amount filter
+                - max_amount (float, optional): Maximum amount filter
+                - amount (float, optional): Exact amount to match (with small tolerance of 0.01%)
+            
+        Returns:
+            str: Formatted string of matching line items with their document context and financial details
+            
+        Raises:
+            Exception: If an error occurs during the database query, it's caught, logged,
+                and an error message is returned
+                
+        Note:
+            When searching for an exact amount, a small tolerance is applied to account for
+            rounding differences across documents (0.01% of the amount).
+        """
         try:
             description = arguments.get('description')
             min_amount = arguments.get('min_amount')
@@ -501,7 +661,31 @@ Always cite specific evidence from documents when making claims. Be thorough and
             return f"Error searching line items: {str(e)}"
     
     def _find_suspicious_patterns(self, arguments: Dict[str, Any]) -> str:
-        """Find suspicious financial patterns."""
+        """Find suspicious financial patterns.
+        
+        This method uses the financial analysis engine to identify potentially suspicious
+        patterns in the construction financial data. It can detect patterns like recurring amounts,
+        reappearing amounts after rejection, and inconsistent markups.
+        
+        Args:
+            arguments (Dict[str, Any]): Dictionary containing search parameters:
+                - pattern_type (str, optional): Type of pattern to search for
+                  ('recurring_amount', 'reappearing_amount', 'inconsistent_markup')
+                - min_confidence (float, optional): Minimum confidence threshold (0.0-1.0)
+                  for including patterns in results (default: 0.5)
+            
+        Returns:
+            str: Formatted string describing the suspicious patterns found, their confidence levels,
+                 explanations, and occurrences across documents
+            
+        Raises:
+            Exception: If an error occurs during pattern analysis, it's caught, logged,
+                and an error message is returned
+                
+        Note:
+            This method uses the FinancialAnalysisEngine from the financial_analysis module
+            to perform the actual pattern detection.
+        """
         try:
             pattern_type = arguments.get('pattern_type')
             min_confidence = arguments.get('min_confidence', 0.5)
@@ -545,7 +729,28 @@ Always cite specific evidence from documents when making claims. Be thorough and
             return f"Error finding suspicious patterns: {str(e)}"
     
     def _run_sql_query(self, arguments: Dict[str, Any]) -> str:
-        """Run a custom SQL query."""
+        """Run a custom SQL query.
+        
+        This method allows the agent to execute custom SQL queries for more advanced
+        data analysis. For security reasons, only SELECT statements are permitted.
+        Results are formatted as a text table with headers.
+        
+        Args:
+            arguments (Dict[str, Any]): Dictionary containing the query:
+                - query (str): SQL query to execute (must be a SELECT statement)
+            
+        Returns:
+            str: Formatted string containing the query results as a text table,
+                 or an error message if the query is invalid or fails
+            
+        Raises:
+            Exception: If an error occurs during query execution, it's caught, logged,
+                and an error message is returned
+                
+        Note:
+            For security reasons, only SELECT queries are allowed. The result is limited
+            to 50 rows to prevent excessive output.
+        """
         try:
             query = arguments.get('query')
             
@@ -588,7 +793,32 @@ Always cite specific evidence from documents when making claims. Be thorough and
             return f"Error executing SQL query: {str(e)}"
     
     def _generate_final_report(self, question: str, context: Optional[str], investigation_steps: List[str]) -> str:
-        """Generate final investigation report."""
+        """Generate final investigation report.
+        
+        This method creates a comprehensive final report that summarizes the findings
+        of the investigation. It uses the LLM to synthesize the information gathered
+        during the investigation steps into a well-structured report.
+        
+        In mock mode, it returns a predefined mock report for testing purposes.
+        
+        Args:
+            question (str): The original investigation question
+            context (Optional[str]): Additional context information provided initially
+            investigation_steps (List[str]): Collection of investigation steps and
+                intermediate findings from the agent's investigation process
+            
+        Returns:
+            str: Formatted investigation report with findings, evidence, and conclusions
+            
+        Raises:
+            Exception: If an error occurs during report generation, it's caught, logged,
+                and an error message is returned
+                
+        Note:
+            The report is structured to include a summary of findings, key evidence,
+            explanation of suspicious patterns or discrepancies, answers to the original
+            question, and suggested next steps.
+        """
         try:
             # Check if we're in mock mode (via LLM manager)
             is_mock_mode = getattr(self.llm, 'mock_mode', False)

@@ -14,14 +14,57 @@ logger = logging.getLogger(__name__)
 
 
 class EmbeddingManager:
-    """Manages document embeddings for semantic search."""
+    """Manages document embeddings for semantic search.
+    
+    This class generates and manages vector embeddings for documents, enabling
+    semantic search capabilities within the construction document database.
+    It uses OpenAI's embedding models to convert text into high-dimensional
+    vector representations for similarity search.
+    
+    Attributes:
+        db_session: Database session for accessing and storing embeddings
+        config (Dict[str, Any]): Configuration settings for the embedding manager
+        mock_mode (bool): Whether mock mode is enabled (no actual API calls)
+        embedding_model (str): The embedding model to use (e.g., 'text-embedding-3-small')
+        api_key (str): OpenAI API key for authentication
+        client: The OpenAI client instance
+    
+    Examples:
+        >>> from cdas.db.session import get_session
+        >>> from cdas.ai.embeddings import EmbeddingManager
+        >>> 
+        >>> session = get_session()
+        >>> 
+        >>> # Initialize embedding manager
+        >>> embedding_manager = EmbeddingManager(session)
+        >>> 
+        >>> # Generate embeddings for a document
+        >>> doc_id = "doc_123abc"
+        >>> embedding_manager.embed_document(doc_id)
+        >>> 
+        >>> # Search for similar documents
+        >>> results = embedding_manager.search("HVAC installation costs")
+        >>> for result in results:
+        ...     print(f"Document: {result['doc_id']}, Similarity: {result['similarity']:.2f}")
+    """
     
     def __init__(self, db_session, config: Optional[Dict[str, Any]] = None):
         """Initialize the embedding manager.
         
         Args:
-            db_session: Database session
-            config: Optional configuration dictionary
+            db_session: Database session for accessing and storing embeddings
+            config (Optional[Dict[str, Any]]): Configuration dictionary with the following options:
+                - embedding_model (str): Embedding model to use (default: 'text-embedding-3-small')
+                - api_key (str): OpenAI API key for authentication
+                - mock_mode (bool): Force mock mode (no actual API calls)
+        
+        Raises:
+            ImportError: If the OpenAI package is not installed
+            Exception: If there's an error initializing the OpenAI client (will fall back to mock mode)
+        
+        Note:
+            In mock mode, the manager generates deterministic mock embeddings based on
+            the hash of the input text, instead of making API calls.
         """
         self.db_session = db_session
         self.config = config or {}
@@ -57,11 +100,32 @@ class EmbeddingManager:
     def generate_embeddings(self, text: str) -> List[float]:
         """Generate embeddings for text.
         
+        This method converts text into a vector embedding using OpenAI's embedding models.
+        The resulting embedding can be used for semantic similarity search.
+        In mock mode, it generates deterministic mock embeddings based on a hash of the input text.
+        
         Args:
-            text: Text to embed
+            text (str): Text content to convert into an embedding vector
             
         Returns:
-            Embedding vector
+            List[float]: Vector embedding representing the semantic content of the text
+                (1536 dimensions for text-embedding-3-small, 3072 for text-embedding-3-large)
+            
+        Raises:
+            ValueError: If the embedding client is not initialized
+            Exception: If there's an error in the API call (will fall back to mock mode)
+            
+        Note:
+            The vector dimensionality depends on the embedding model:
+            - text-embedding-3-small: 1536 dimensions
+            - text-embedding-3-large: 3072 dimensions
+            
+        Examples:
+            >>> embedding_manager = EmbeddingManager(session)
+            >>> text = "HVAC installation and commissioning"
+            >>> embedding = embedding_manager.generate_embeddings(text)
+            >>> print(f"Embedding dimensions: {len(embedding)}")
+            Embedding dimensions: 1536
         """
         # Check if we're in mock mode
         if self.mock_mode:
@@ -116,11 +180,31 @@ class EmbeddingManager:
     def embed_document(self, doc_id: str) -> bool:
         """Generate and store embeddings for a document.
         
+        This method retrieves the content of each page in a document, generates embeddings
+        for each page's content, and stores these embeddings in the database. This enables
+        semantic search functionality for the document.
+        
         Args:
-            doc_id: Document ID
+            doc_id (str): Document ID to generate embeddings for
             
         Returns:
-            Success flag
+            bool: True if embeddings were successfully generated and stored, False otherwise
+            
+        Raises:
+            Exception: If an error occurs during embedding generation or database operations,
+                the exception is logged and re-raised
+                
+        Note:
+            Embeddings are stored at the page level, not the document level. Each page in the
+            document will have its own embedding vector stored in the pages table, allowing
+            for fine-grained semantic search within documents.
+            
+        Examples:
+            >>> embedding_manager = EmbeddingManager(session)
+            >>> doc_id = "doc_123abc"
+            >>> success = embedding_manager.embed_document(doc_id)
+            >>> print(f"Embedding successful: {success}")
+            Embedding successful: True
         """
         # Get document content
         query = """
@@ -169,14 +253,45 @@ class EmbeddingManager:
             raise
     
     def search(self, query: str, limit: int = 5) -> List[Dict[str, Any]]:
-        """Search for documents similar to query.
+        """Search for documents similar to query using semantic search.
+        
+        This method performs semantic similarity search across document pages by converting
+        the query text into an embedding vector and comparing it with stored document
+        embeddings. It returns the most semantically similar document pages sorted by
+        similarity score.
         
         Args:
-            query: Search query
-            limit: Maximum number of results
+            query (str): Search query text
+            limit (int, optional): Maximum number of results to return (default: 5)
             
         Returns:
-            List of similar documents
+            List[Dict[str, Any]]: List of matching document pages with their metadata and similarity scores.
+                Each dictionary contains:
+                - page_id: Unique identifier for the page
+                - doc_id: Document identifier
+                - page_number: Page number within the document
+                - content: Page content
+                - doc_type: Type of document (e.g., 'payment_app', 'change_order')
+                - party: Party associated with the document (e.g., 'contractor', 'district')
+                - similarity: Similarity score (0-1, higher is more similar)
+            
+        Raises:
+            Exception: If an error occurs during embedding generation or database operations,
+                the exception is logged and re-raised
+                
+        Note:
+            Similarity scores range from 0 to 1, with 1 being an exact match.
+            The PostgreSQL operator <=> is used for vector similarity calculation.
+            
+        Examples:
+            >>> embedding_manager = EmbeddingManager(session)
+            >>> results = embedding_manager.search("HVAC installation costs", limit=3)
+            >>> for result in results:
+            ...     print(f"Doc: {result['doc_id']}, Page: {result['page_number']}, "
+            ...           f"Similarity: {result['similarity']:.2f}")
+            Doc: doc_456def, Page: 2, Similarity: 0.89
+            Doc: doc_123abc, Page: 5, Similarity: 0.78
+            Doc: doc_789ghi, Page: 1, Similarity: 0.65
         """
         try:
             # Generate embedding for query

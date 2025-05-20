@@ -15,13 +15,54 @@ logger = logging.getLogger(__name__)
 
 
 class LLMManager:
-    """Manages interactions with language models."""
+    """Manages interactions with language models.
+    
+    This class provides a unified interface for generating text and using tool calling
+    capabilities with different LLM providers (currently OpenAI and Anthropic).
+    
+    Attributes:
+        config (Dict[str, Any]): Configuration settings for the LLM manager
+        mock_mode (bool): Whether mock mode is enabled (no actual API calls)
+        provider (str): The LLM provider ('anthropic' or 'openai')
+        model (str): The model to use (e.g., 'claude-3-7-sonnet-20250219' or 'o4-mini')
+        api_key (str): API key for authentication
+        temperature (float): Sampling temperature for generation
+        reasoning_effort (str, optional): Reasoning effort for OpenAI o4 models
+        client: The provider-specific client instance
+    
+    Examples:
+        >>> from cdas.ai.llm import LLMManager
+        >>> # Initialize with default settings
+        >>> llm = LLMManager()
+        >>> # Generate text
+        >>> response = llm.generate("What is 2+2?")
+        >>> print(response)
+        4
+        
+        >>> # Initialize with custom configuration
+        >>> config = {
+        ...     "provider": "openai",
+        ...     "model": "o4-mini",
+        ...     "temperature": 0.5
+        ... }
+        >>> llm = LLMManager(config)
+    """
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """Initialize the LLM manager.
         
         Args:
-            config: Optional configuration dictionary
+            config (Optional[Dict[str, Any]]): Configuration dictionary with the following options:
+                - provider (str): LLM provider ('anthropic' or 'openai', default: 'anthropic')
+                - model (str): Model to use (default depends on provider)
+                - api_key (str): API key for authentication
+                - temperature (float): Sampling temperature (default: 0.0)
+                - reasoning_effort (str): For OpenAI o4 models, reasoning effort ('low', 'medium', 'high')
+                - mock_mode (bool): Force mock mode (no actual API calls)
+        
+        Raises:
+            ValueError: If an unsupported LLM provider is specified
+            ImportError: If the required packages are not installed
         """
         self.config = config or {}
         
@@ -84,14 +125,37 @@ class LLMManager:
                 reasoning_effort: Optional[Literal['low', 'medium', 'high']] = None) -> str:
         """Generate text from the language model.
         
+        This method sends a prompt to the language model and returns the generated text.
+        In mock mode, it returns predefined responses for testing purposes.
+        
         Args:
-            prompt: Prompt text
-            system_prompt: Optional system prompt
-            temperature: Optional temperature override
-            reasoning_effort: Optional reasoning effort for OpenAI o4 models ('low', 'medium', 'high')
+            prompt (str): The prompt text to send to the language model
+            system_prompt (Optional[str]): System prompt to set context for the model
+                (supported by both OpenAI and Anthropic)
+            temperature (Optional[float]): Override the default temperature setting
+                Lower values (0.0) give more deterministic outputs
+                Higher values (0.7-1.0) give more creative outputs
+            reasoning_effort (Optional[Literal['low', 'medium', 'high']]): Controls the
+                reasoning effort for OpenAI o4 models, ignored for other models
             
         Returns:
-            Generated text
+            str: The generated text response from the language model
+            
+        Raises:
+            ValueError: If the LLM client is not initialized
+            Exception: If there's an error in the API call (will fall back to mock mode)
+            
+        Examples:
+            >>> llm = LLMManager()
+            >>> # Simple generation
+            >>> response = llm.generate("What is 2+2?") 
+            >>> print(response)
+            4
+            
+            >>> # With system prompt
+            >>> system = "You are a financial expert specializing in construction disputes."
+            >>> question = "What typical issues arise in construction payment disputes?"
+            >>> response = llm.generate(question, system_prompt=system)
         """
         # Check if we're in mock mode
         if self.mock_mode:
@@ -178,15 +242,73 @@ class LLMManager:
                           reasoning_effort: Optional[Literal['low', 'medium', 'high']] = None) -> Dict[str, Any]:
         """Generate text with function calling capabilities.
         
+        This method allows the language model to call specified tools/functions.
+        It handles compatibility between different LLM providers' function calling formats.
+        In mock mode, it returns simulated tool calls for testing purposes.
+        
         Args:
-            prompt: Prompt text
-            tools: List of tool definitions
-            system_prompt: Optional system prompt
-            temperature: Optional temperature override
-            reasoning_effort: Optional reasoning effort for o4 models ('low', 'medium', 'high')
+            prompt (str): The prompt text to send to the language model
+            tools (List[Dict[str, Any]]): List of tool definitions in OpenAI function calling format:
+                [
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": "function_name",
+                            "description": "Description of what the function does",
+                            "parameters": {
+                                "type": "object",
+                                "properties": {
+                                    "param1": {"type": "string", "description": "Parameter description"},
+                                    # Additional parameters...
+                                },
+                                "required": ["param1"]
+                            }
+                        }
+                    }
+                ]
+            system_prompt (Optional[str]): System prompt to set context for the model
+            temperature (Optional[float]): Override the default temperature setting
+            reasoning_effort (Optional[Literal['low', 'medium', 'high']]): Controls the
+                reasoning effort for OpenAI o4 models, ignored for other models
             
         Returns:
-            Generated text and any tool calls
+            Dict[str, Any]: Dictionary containing:
+                - 'content' (str): The generated text response
+                - 'tool_calls' (List[Dict] or None): Tool calls made by the model
+            
+        Raises:
+            ValueError: If the LLM client is not initialized or tool calling is not 
+                        implemented for the specified provider
+            Exception: If there's an error in the API call (will fall back to mock mode)
+            
+        Examples:
+            >>> llm = LLMManager()
+            >>> # Define tools
+            >>> tools = [
+            ...     {
+            ...         "type": "function",
+            ...         "function": {
+            ...             "name": "search_documents",
+            ...             "description": "Search for documents matching a query",
+            ...             "parameters": {
+            ...                 "type": "object",
+            ...                 "properties": {
+            ...                     "query": {"type": "string", "description": "Search query"},
+            ...                 },
+            ...                 "required": ["query"]
+            ...             }
+            ...         }
+            ...     }
+            ... ]
+            >>> # Generate with tools
+            >>> response = llm.generate_with_tools("Find documents about HVAC systems", tools)
+            >>> 
+            >>> # Process tool calls
+            >>> if response['tool_calls']:
+            ...     for tool_call in response['tool_calls']:
+            ...         function_name = tool_call['function']['name']
+            ...         arguments = json.loads(tool_call['function']['arguments'])
+            ...         # Call the appropriate function with the arguments
         """
         # Check if we're in mock mode
         if self.mock_mode:
