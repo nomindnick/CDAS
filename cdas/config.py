@@ -29,9 +29,9 @@ _DEFAULT_CONFIG = {
         "anomaly_detection_threshold": 0.8
     },
     "ai": {
-        "llm_model": "gpt-4",
-        "embedding_model": "text-embedding-ada-002",
-        "max_tokens": 4096
+        "llm_model": "o4-mini",
+        "embedding_model": "text-embedding-3-small",
+        "reasoning_effort": "medium"
     },
     "reporting": {
         "default_format": "pdf",

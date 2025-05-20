@@ -153,6 +153,8 @@ def setup_query_commands(subparsers):
     # Ask command
     ask_parser = query_subparsers.add_parser('ask', help='Ask a natural language question')
     ask_parser.add_argument('question', help='Question to ask')
+    ask_parser.add_argument('--verbose', '-v', action='store_true', 
+                         help='Show more detailed information in the answer')
 
 
 def setup_report_commands(subparsers):
@@ -614,9 +616,94 @@ def search_documents(args):
     """
     logger.info(f"Searching for text: {args.text}")
     
-    with session_scope() as session:
-        # TODO: Implement full-text search
-        print("Search functionality not yet implemented")
+    try:
+        with session_scope() as session:
+            # Try to use semantic search if available
+            try:
+                from cdas.ai.embeddings import EmbeddingManager
+                from cdas.ai.semantic_search.search import semantic_search
+                from cdas.config import get_config
+                
+                config = get_config()
+                ai_config = config.get('ai', {})
+                
+                # Create embedding manager
+                embedding_manager = EmbeddingManager(session, ai_config.get('embeddings', {}))
+                
+                print(f"Performing semantic search for: {args.text}")
+                print("This may take a moment...")
+                
+                # Perform semantic search
+                results = semantic_search(
+                    session, 
+                    embedding_manager, 
+                    args.text, 
+                    limit=10,
+                    doc_type=args.type,
+                    party=args.party
+                )
+                
+                if not results:
+                    print("No results found")
+                    return
+                
+                print(f"Found {len(results)} semantically relevant documents:")
+                
+                for i, result in enumerate(results):
+                    doc_info = result['document']
+                    similarity = result['similarity']
+                    
+                    print(f"\nResult {i+1} (relevance: {similarity:.2f}):")
+                    print(f"Document: {doc_info['title']}")
+                    print(f"Type: {doc_info['doc_type']}")
+                    print(f"Party: {doc_info['party']}")
+                    print(f"Date: {doc_info['date']}")
+                    print(f"Page: {result['page_number']}")
+                    
+                    # Print context (truncated)
+                    context = result['context']
+                    if len(context) > 300:
+                        context = context[:297] + "..."
+                    print(f"Content: {context}")
+                
+                return
+                
+            except ImportError:
+                logger.warning("Semantic search components not available. Falling back to keyword search.")
+            
+            # Fallback to regular search
+            from cdas.db.operations import search_document_content
+            
+            results = search_document_content(
+                session,
+                keyword=args.text,
+                doc_type=args.type,
+                party=args.party
+            )
+            
+            if not results:
+                print("No results found")
+                return
+            
+            print(f"Found {len(results)} documents containing '{args.text}':")
+            
+            for i, result in enumerate(results):
+                print(f"\nResult {i+1}:")
+                print(f"Document: {result['title']}")
+                print(f"Type: {result['doc_type']}")
+                print(f"Party: {result['party']}")
+                print(f"Date: {result['date']}")
+                
+                # Print matching context if available
+                if 'context' in result:
+                    context = result['context']
+                    if len(context) > 300:
+                        context = context[:297] + "..."
+                    print(f"Content: {context}")
+    
+    except Exception as e:
+        print(f"Error searching documents: {str(e)}")
+        logger.error(f"Error in search_documents: {str(e)}")
 
 
 def find_line_items(args):
@@ -670,8 +757,30 @@ def ask_question(args):
     """
     logger.info(f"Question: {args.question}")
     
-    # TODO: Implement AI-based question answering
-    print("Question answering functionality not yet implemented")
+    try:
+        from cdas.ai.question_answering import answer_question
+        
+        print(f"Analyzing question: {args.question}")
+        print("This may take a moment...")
+        
+        result = answer_question(args.question)
+        
+        print("\nAnswer:")
+        print(result['answer'])
+        
+        if args.verbose and 'search_results' in result and result['search_results']:
+            print("\nRelevant documents:")
+            for i, doc in enumerate(result['search_results'][:3]):  # Show top 3
+                doc_info = doc['document']
+                print(f"  {i+1}. {doc_info['title']} ({doc_info['doc_type']} from {doc_info['party']}, dated {doc_info['date']})")
+    
+    except ImportError as e:
+        print("AI components not available. Make sure all required packages are installed.")
+        logger.error(f"Error importing AI components: {str(e)}")
+    except Exception as e:
+        print("An error occurred while answering the question.")
+        print(f"Error: {str(e)}")
+        logger.error(f"Error in ask_question: {str(e)}")
 
 
 def generate_report(args, report_type):

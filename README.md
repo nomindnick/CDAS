@@ -176,12 +176,14 @@ with session_scope() as session:
 - Calculate centrality measures to find key documents
 - Generate community detection for related document groups
 
-### AI Integration (Coming Soon)
+### AI Integration
 
-- Document understanding using LLMs
+- Document understanding using LLMs (OpenAI o4-mini)
+- Semantic search using embeddings
 - Pattern recognition for complex financial patterns
-- Report generation with natural language summaries
-- Interactive querying of documents
+- Investigator Agent for interactive analysis
+- Natural language querying of documents
+- Report generation with evidence citations
 
 ### Reporting System (Coming Soon)
 
@@ -296,6 +298,63 @@ with session_scope() as session:
     output_path = analyzer.visualize_network(output_path="network.png")
     print(f"Network visualization saved to {output_path}")
 ```
+
+## AI Integration
+
+The system uses AI to enhance document analysis and provide natural language querying:
+
+```python
+import os
+from dotenv import load_dotenv
+from cdas.db.session import session_scope
+from cdas.ai.llm import LLMManager
+from cdas.ai.embeddings import EmbeddingManager
+from cdas.ai.agents.investigator import InvestigatorAgent
+
+# Load environment variables for API keys
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+# Configure LLM Manager
+llm_config = {
+    'provider': 'openai',
+    'model': 'o4-mini',
+    'api_key': OPENAI_API_KEY,
+    'reasoning_effort': 'medium'
+}
+
+with session_scope() as session:
+    # Initialize LLM Manager
+    llm_manager = LLMManager(llm_config)
+    
+    # Get explanation from LLM
+    explanation = llm_manager.generate(
+        "Explain how change orders can lead to construction disputes.",
+        system_prompt="You are an expert in construction law and finance."
+    )
+    print(f"LLM Explanation: {explanation}")
+    
+    # Initialize Embedding Manager for semantic search
+    embedding_manager = EmbeddingManager(session, {
+        'embedding_model': 'text-embedding-3-small',
+        'api_key': OPENAI_API_KEY
+    })
+    
+    # Search documents semantically
+    results = embedding_manager.search("foundation issues extra work", limit=5)
+    for result in results:
+        print(f"Document: {result['doc_id']} - Similarity: {result['similarity']:.2f}")
+    
+    # Use Investigator Agent to analyze financial data
+    investigator = InvestigatorAgent(session, llm_manager)
+    investigation = investigator.investigate(
+        "What evidence suggests the contractor double-billed for HVAC equipment?"
+    )
+    
+    print(f"Investigation Report: {investigation['final_report']}")
+```
+
+For more detailed usage, see [examples/ai_integration_example.py](examples/ai_integration_example.py) and [AI Integration Documentation](docs/ai-integration.md).
 
 ## Database Operations
 
