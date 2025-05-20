@@ -1,0 +1,51 @@
+# {{ title }}
+
+*Generated on: {{ date }}*
+
+## Project: {{ project }}
+
+{% for section in sections %}
+{{ "#" * (section.level + 1) }} {{ section.heading }}
+
+{{ section.content }}
+
+{% endfor %}
+
+{% if disputed_amounts %}
+## Disputed Amounts
+
+| Amount | Description |
+|--------|-------------|
+{% for amount in disputed_amounts %}
+| {{ amount.amount|currency }} | {{ amount.description }} |
+{% endfor %}
+{% endif %}
+
+{% if suspicious_patterns %}
+## Suspicious Patterns
+
+{% for pattern in suspicious_patterns %}
+### {{ pattern.pattern_type|replace('_', ' ')|title }}
+
+{{ pattern.explanation }}
+
+**Confidence:** {{ pattern.confidence * 100 }}%
+
+{% endfor %}
+{% endif %}
+
+{% if include_evidence %}
+## Evidence
+
+{% for item in disputed_amounts + suspicious_patterns %}
+### {{ item.pattern_type|replace('_', ' ')|title if item.pattern_type else 'Disputed Amount' }}
+
+{{ item.explanation }}
+
+**Documents:**
+{% for doc_id in item.doc_ids|default([]) %}
+- {{ doc_id }}
+{% endfor %}
+
+{% endfor %}
+{% endif %}

@@ -13,6 +13,7 @@ import argparse
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
 import datetime
+import markdown
 
 from cdas.db.session import get_session, session_scope
 from cdas.document_processor.factory import DocumentProcessorFactory
@@ -792,19 +793,52 @@ def generate_report(args, report_type):
     """
     logger.info(f"Generating {report_type} report: {args.output_path}")
     
-    # For integration testing only - create a simple report file
-    with open(args.output_path, 'w') as f:
-        f.write(f"# Financial Analysis Report\n\n")
-        f.write(f"## Project: {args.project}\n\n")
-        f.write(f"This is a sample {report_type} report for testing purposes.\n\n")
+    with session_scope() as session:
+        from cdas.reporting.generator import ReportGenerator
         
-        if hasattr(args, 'include_evidence') and args.include_evidence:
-            f.write("## Evidence\n\n")
-            f.write("Sample evidence would be listed here.\n")
-    
-    print(f"{report_type.capitalize()} report generated: {args.output_path}")
-    
-    # TODO: Implement full report generation
+        # Create report generator
+        report_generator = ReportGenerator(session)
+        
+        # Generate report based on type
+        if report_type == 'summary':
+            result = report_generator.generate_summary_report(
+                args.output_path,
+                project_id=getattr(args, 'project', None),
+                format=args.format,
+                include_evidence=getattr(args, 'include_evidence', False),
+                created_by=getattr(args, 'user', None)
+            )
+        elif report_type == 'detailed':
+            result = report_generator.generate_detailed_report(
+                args.output_path,
+                project_id=getattr(args, 'project', None),
+                format=args.format,
+                include_evidence=getattr(args, 'include_evidence', False),
+                created_by=getattr(args, 'user', None)
+            )
+        elif report_type == 'evidence':
+            result = report_generator.generate_evidence_report(
+                args.amount,
+                args.output_path,
+                format=args.format,
+                created_by=getattr(args, 'user', None)
+            )
+        else:
+            logger.error(f"Unknown report type: {report_type}")
+            print(f"Error: Unknown report type '{report_type}'")
+            return
+        
+        print(f"{report_type.capitalize()} report generated: {args.output_path}")
+        print(f"Report ID: {result.get('report_id')}")
+        print(f"Format: {result.get('format')}")
+        print(f"Content length: {result.get('content_length')} bytes")
+
+        # Try to get file size
+        try:
+            file_size = os.path.getsize(args.output_path)
+            print(f"File size: {file_size} bytes")
+        except (FileNotFoundError, PermissionError):
+            pass
 
 
 def parse_args(args=None):
@@ -826,6 +860,10 @@ def parse_args(args=None):
     setup_analyze_commands(subparsers)
     setup_query_commands(subparsers)
     setup_report_commands(subparsers)
+    
+    # Add global arguments
+    parser.add_argument('--user', help='User identifier for tracking who created reports')
+    parser.add_argument('--project', help='Project identifier')
     
     # Parse arguments
     return parser.parse_args(args)

@@ -1,0 +1,65 @@
+# {{ title }}
+
+*Generated on: {{ date }}*
+
+## Amount: {{ amount|currency }}
+
+{{ narrative }}
+
+## Matches
+
+{% if matches %}
+| Document | Description | Amount | Date |
+|----------|-------------|--------|------|
+{% for match in matches %}
+| {{ match.doc_id }} | {{ match.description }} | {{ match.amount|currency }} | {{ match.date|default('Unknown') }} |
+{% endfor %}
+{% else %}
+No matches found for this amount.
+{% endif %}
+
+{% if anomalies %}
+## Anomalies
+
+{% for anomaly in anomalies %}
+### {{ anomaly.anomaly_type|replace('_', ' ')|title }}
+
+{{ anomaly.explanation }}
+
+**Confidence:** {{ anomaly.confidence * 100 }}%
+
+{% endfor %}
+{% endif %}
+
+{% if evidence %}
+## Evidence
+
+**Evidence Count:** {{ evidence.evidence_count }}
+
+{% for evidence_id, evidence_item in evidence.evidence_items.items() %}
+### {{ evidence_id }}
+
+{% for doc in evidence_item.documents %}
+**Document:** {{ doc.file_name }}
+**Type:** {{ doc.doc_type|default('Unknown') }}
+**Date:** {{ doc.date|default('Unknown') }}
+{% endfor %}
+
+{% for item in evidence_item.items %}
+**Line Item:** {{ item.description }}
+**Amount:** {{ item.amount|currency if item.amount != None }}
+{% endfor %}
+
+{% if evidence_item.screenshots %}
+**Evidence Screenshots:**
+
+{% for screenshot in evidence_item.screenshots %}
+{% if screenshot.success %}
+![Screenshot of item {{ screenshot.item_id }}]({{ screenshot.data_url }})
+*Screenshot from page {{ screenshot.page_num + 1 }}*
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+{% endif %}

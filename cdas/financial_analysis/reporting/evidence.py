@@ -13,6 +13,13 @@ from sqlalchemy.orm import Session
 from cdas.db.models import Document, LineItem, Page, Annotation, ReportEvidence
 from cdas.db.operations import add_report_evidence
 
+# Import screenshot generator
+try:
+    from cdas.financial_analysis.reporting.screenshots import EvidenceScreenshotGenerator
+    HAS_SCREENSHOT_SUPPORT = True
+except ImportError:
+    HAS_SCREENSHOT_SUPPORT = False
+
 
 class EvidenceAssembler:
     """Assembles evidence for financial analysis findings."""
@@ -26,6 +33,15 @@ class EvidenceAssembler:
         """
         self.db_session = db_session
         self.config = config or {}
+        
+        # Initialize screenshot generator if available
+        self.screenshot_generator = None
+        self.include_screenshots = self.config.get('include_screenshots', False)
+        
+        if HAS_SCREENSHOT_SUPPORT and self.include_screenshots:
+            screenshot_dir = self.config.get('screenshot_dir', None)
+            self.screenshot_generator = EvidenceScreenshotGenerator(screenshot_dir)
+            self.screenshot_cache = {}
     
     def assemble_evidence(self, findings: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Assemble evidence for a list of findings.
@@ -124,6 +140,10 @@ class EvidenceAssembler:
         # Generate citations
         evidence['citations'] = self._generate_citations(evidence['items'], evidence['documents'])
         
+        # Add screenshots if enabled
+        if self.include_screenshots and self.screenshot_generator and evidence['items']:
+            evidence['screenshots'] = self._get_screenshots_for_items(evidence['items'])
+        
         return evidence
     
     def _get_document_info(self, doc_id: str) -> Optional[Dict[str, Any]]:
@@ -172,6 +192,45 @@ class EvidenceAssembler:
             'category': item.category,
             'status': item.status
         }
+    
+    def _get_screenshots_for_items(self, items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Get screenshots for line items.
+        
+        Args:
+            items: List of line item dictionaries
+            
+        Returns:
+            List of screenshot dictionaries
+        """
+        if not self.screenshot_generator:
+            return []
+        
+        screenshots = []
+        
+        for item in items:
+            item_id = item.get('item_id')
+            if not item_id:
+                continue
+                
+            # Check if we already have a screenshot for this item
+            if item_id in self.screenshot_cache:
+                screenshots.append(self.screenshot_cache[item_id])
+                continue
+            
+            # Get the line item object
+            line_item = self.db_session.query(LineItem).filter_by(item_id=item_id).first()
+            if not line_item:
+                continue
+            
+            # Generate screenshot
+            screenshot = self.screenshot_generator.get_screenshot_for_line_item(line_item)
+            
+            if screenshot.get('success'):
+                # Cache the screenshot
+                self.screenshot_cache[item_id] = screenshot
+                screenshots.append(screenshot)
+        
+        return screenshots
     
     def _generate_citations(self, items: List[Dict[str, Any]], 
                           documents: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -249,6 +308,27 @@ class EvidenceAssembler:
         
         return result
 
+    def get_evidence_screenshots(self, evidence_collection: Dict[str, Any]) -> Dict[str, Any]:
+        """Get screenshots for evidence collection.
+        
+        Args:
+            evidence_collection: Evidence collection dictionary
+            
+        Returns:
+            Dictionary mapping evidence IDs to screenshots
+        """
+        if not self.screenshot_generator or not self.include_screenshots:
+            return {}
+        
+        # Extract evidence items
+        evidence_items = []
+        for evidence_id, evidence in evidence_collection.get('evidence_items', {}).items():
+            evidence['evidence_id'] = evidence_id
+            evidence_items.append(evidence)
+        
+        # Get screenshots
+        return self.screenshot_generator.get_screenshots_for_evidence(evidence_items)
+    
     def store_evidence_for_report(self, report_id: int, 
                                 findings: List[Dict[str, Any]]) -> List[ReportEvidence]:
         """Store evidence for a report in the database.

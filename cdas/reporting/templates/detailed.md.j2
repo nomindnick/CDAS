@@ -1,0 +1,104 @@
+# {{ title }}
+
+*Generated on: {{ date }}*
+
+## Project: {{ project }}
+
+{% if project_data %}
+**Total Documents:** {{ project_data.total_documents }}
+**Total Financial Items:** {{ project_data.total_financial_items }}
+**Total Amount Disputed:** {{ project_data.total_amount_disputed|currency }}
+{% endif %}
+
+## Disputed Amounts
+
+{% if disputed_amounts %}
+| Amount | Description | Document | Party |
+|--------|-------------|----------|-------|
+{% for amount in disputed_amounts %}
+| {{ amount.amount|currency }} | {{ amount.description }} | {{ amount.doc_id }} | {{ amount.party|default('Unknown') }} |
+{% endfor %}
+{% else %}
+No disputed amounts were identified.
+{% endif %}
+
+## Suspicious Patterns
+
+{% if patterns_by_type %}
+{% for pattern_type, patterns in patterns_by_type.items() %}
+### {{ pattern_type|replace('_', ' ')|title }} ({{ patterns|length }})
+
+{% for pattern in patterns %}
+#### Pattern {{ loop.index }}
+
+{{ pattern.explanation }}
+
+**Confidence:** {{ pattern.confidence * 100 }}%
+
+**Documents involved:**
+{% for doc_id in pattern.doc_ids|default([]) %}
+- {{ doc_id }}
+{% endfor %}
+
+{% endfor %}
+{% endfor %}
+{% else %}
+No suspicious patterns were identified.
+{% endif %}
+
+{% if anomalies %}
+## Financial Anomalies
+
+{% for anomaly in anomalies %}
+### {{ anomaly.anomaly_type|replace('_', ' ')|title }}
+
+{{ anomaly.explanation }}
+
+**Confidence:** {{ anomaly.confidence * 100 }}%
+
+{% endfor %}
+{% else %}
+No financial anomalies were detected.
+{% endif %}
+
+{% if relationships %}
+## Document Relationships
+
+{% for relationship in relationships %}
+- {{ relationship.source_doc_id }} -> {{ relationship.target_doc_id }} ({{ relationship.relationship_type|replace('_', ' ')|title }})
+{% endfor %}
+{% endif %}
+
+{% if include_evidence and evidence %}
+## Evidence
+
+**Evidence Count:** {{ evidence.evidence_count }}
+
+{% for evidence_id, evidence_item in evidence.evidence_items.items() %}
+### {{ evidence_id }}: {{ evidence_item.type|replace('_', ' ')|title }}
+
+{{ evidence_item.summary }}
+
+**Documents:**
+{% for doc in evidence_item.documents %}
+- {{ doc.doc_type|default('Unknown') }}: {{ doc.file_name }} ({{ doc.date }})
+{% endfor %}
+
+**Line Items:**
+{% for item in evidence_item.items %}
+- {{ item.description }}: {{ item.amount|currency if item.amount != None }}
+{% endfor %}
+
+{% if evidence_item.screenshots %}
+**Evidence Screenshots:**
+
+{% for screenshot in evidence_item.screenshots %}
+{% if screenshot.success %}
+![Screenshot of item {{ screenshot.item_id }}]({{ screenshot.data_url }})
+*Screenshot from page {{ screenshot.page_num + 1 }}*
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+{% endif %}

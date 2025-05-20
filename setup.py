@@ -5,10 +5,20 @@ setup(
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
-        # Add your dependencies here
-        "pdfplumber",
-        "pandas",
+        # Core dependencies
         "sqlalchemy",
         "alembic",
+        "click",
+        "pydantic",
+        
+        # Document processing
+        "pdfplumber",
+        "pandas",
+        "openpyxl",
+        
+        # Reporting
+        "weasyprint",
+        "markdown",
+        "jinja2",
     ],
 )
