@@ -9,7 +9,7 @@ querying operations.
 import os
 import hashlib
 import uuid
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional, Union, Tuple
 
 from sqlalchemy.orm import Session
@@ -119,7 +119,7 @@ def register_document(
         party=party,
         date_created=date_created,
         date_received=date_received,
-        date_processed=datetime.now(UTC),
+        date_processed=datetime.now(timezone.utc),
         processed_by=processed_by,
         meta_data=metadata or {}
     )
@@ -390,7 +390,7 @@ def create_amount_match(
         match_type=match_type,
         confidence=confidence,
         difference=difference,
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
         metadata=metadata or {}
     )
     
@@ -497,7 +497,7 @@ def create_analysis_flag(
         flag_type=flag_type,
         confidence=confidence,
         explanation=explanation,
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
         created_by=created_by,
         status=status,
         metadata=metadata or {}
@@ -674,7 +674,7 @@ def create_report(
         description=description,
         content=content,
         format=format,
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
         created_by=created_by,
         parameters=parameters or {}
     )

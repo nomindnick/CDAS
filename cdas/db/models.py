@@ -10,7 +10,7 @@ from sqlalchemy import (
     Text, JSON, Numeric, Date, UniqueConstraint, Index
 )
 from sqlalchemy.orm import declarative_base, relationship
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 import uuid
 import os
 
@@ -32,7 +32,7 @@ class Document(Base):
     party = Column(String(50))
     date_created = Column(Date)
     date_received = Column(Date)
-    date_processed = Column(DateTime, default=lambda: datetime.now(UTC))
+    date_processed = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     processed_by = Column(String(100))
     status = Column(String(20), default='active')
     meta_data = Column(JSON)
@@ -235,7 +235,7 @@ class AnalysisFlag(Base):
     flag_type = Column(String(50), nullable=False)
     confidence = Column(Numeric(5, 2))
     explanation = Column(Text)
-    created_at = Column(DateTime, default=lambda: datetime.now(UTC))
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     created_by = Column(String(100))
     status = Column(String(20), default='active')
     meta_data = Column(JSON)
@@ -264,7 +264,7 @@ class Report(Base):
     description = Column(Text)
     content = Column(Text)
     format = Column(String(20))
-    created_at = Column(DateTime, default=lambda: datetime.now(UTC))
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     created_by = Column(String(100))
     parameters = Column(JSON)
     
@@ -318,7 +318,7 @@ class AmountMatch(Base):
     match_type = Column(String(50))
     confidence = Column(Numeric(5, 2))
     difference = Column(Numeric(15, 2))
-    created_at = Column(DateTime, default=lambda: datetime.now(UTC))
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     meta_data = Column(JSON)
     
     # Relationships
