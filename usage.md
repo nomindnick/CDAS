@@ -158,7 +158,7 @@ python -m cdas.cli [GLOBAL_OPTIONS] COMMAND [SUBCOMMAND] [ARGUMENTS] [OPTIONS]
 - `query` - Querying and search commands
 - `report` - Reporting commands
 - `network` - Network analysis commands
-- `shell` - Start the interactive shell
+- `interactive` - Start the interactive shell
 
 ### Getting Help
 
@@ -181,10 +181,10 @@ CDAS provides an interactive shell interface that offers a more user-friendly ex
 
 ```bash
 # Start the interactive shell
-python -m cdas.cli shell
+python -m cdas.cli interactive
 
 # Start with project context
-python -m cdas.cli shell --project school_renovation_2024
+python -m cdas.cli interactive --project school_renovation_2024
 ```
 
 ### Shell Features
@@ -612,7 +612,7 @@ python -m cdas.cli report --help
 
 For easier troubleshooting, use the interactive shell which provides better guidance and command completion:
 ```bash
-python -m cdas.cli shell
+python -m cdas.cli interactive
 cdas> help
 ```
 
