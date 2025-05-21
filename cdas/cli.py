@@ -38,18 +38,23 @@ def setup_document_commands(subparsers):
     doc_subparsers = doc_parser.add_subparsers(dest='doc_command', help='Document command')
     
     # Ingest command
-    ingest_parser = doc_subparsers.add_parser('ingest', help='Ingest a document')
-    ingest_parser.add_argument('file_path', help='Path to the document file')
+    ingest_parser = doc_subparsers.add_parser('ingest', help='Ingest a document or directory of documents')
+    ingest_parser.add_argument('path', help='Path to the document file or directory')
     ingest_parser.add_argument('--type', 
                             choices=[t.value for t in DocumentType], 
                             required=True,
-                            help='Type of document')
+                            help='Type of document(s)')
     ingest_parser.add_argument('--party', 
                             choices=[p.value for p in PartyType], 
                             required=True,
-                            help='Party associated with the document')
+                            help='Party associated with the document(s)')
     ingest_parser.add_argument('--project', 
                             help='Project identifier')
+    ingest_parser.add_argument('--recursive', 
+                            action='store_true',
+                            help='Recursively process subdirectories (only applicable when path is a directory)')
+    ingest_parser.add_argument('--extensions',
+                            help='Comma-separated list of file extensions to process (e.g., ".pdf,.xlsx") (only applicable when path is a directory)')
     ingest_parser.add_argument('--no-db', 
                             action='store_true',
                             help='Do not save to database')
@@ -200,68 +205,125 @@ def setup_report_commands(subparsers):
 
 
 def ingest_document(args):
-    """Ingest a document.
+    """Ingest a document or directory of documents.
     
     Args:
         args: Command-line arguments
     """
-    logger.info(f"Ingesting document: {args.file_path}")
+    # Get the path from arguments
+    path = Path(args.path)
     
-    file_path = Path(args.file_path)
-    if not file_path.exists():
-        logger.error(f"File not found: {file_path}")
+    # Check if path exists
+    if not path.exists():
+        logger.error(f"Path not found: {path}")
         return
     
     with session_scope() as session:
-        # Create document processor
+        # Create document processor factory
         factory = DocumentProcessorFactory()
-        processor = factory.create_processor(session)
         
-        # Process document
-        result = processor.process_document(
-            str(file_path),
-            args.type,
-            args.party,
-            project_id=args.project,
-            save_to_db=not args.no_db,
-            extract_handwriting=not args.no_handwriting,
-            extract_tables=not args.no_tables
-        )
+        # Common processing arguments
+        processing_args = {
+            'project_id': args.project,
+            'save_to_db': not args.no_db,
+            'extract_handwriting': not args.no_handwriting,
+            'extract_tables': not args.no_tables
+        }
         
-        if result.success:
-            logger.info(f"Document processed successfully")
-            if result.document_id:
-                logger.info(f"Document ID: {result.document_id}")
-                
-            # Print basic information about the document
-            print(f"Document: {file_path.name}")
-            print(f"Type: {args.type}")
-            print(f"Party: {args.party}")
+        # Process either a directory or a single file
+        if path.is_dir():
+            # Directory processing
+            logger.info(f"Ingesting documents from directory: {path}")
             
-            if result.metadata.get('document_date'):
-                print(f"Date: {result.metadata['document_date']}")
-                
-            if 'page_count' in result.metadata:
-                print(f"Pages: {result.metadata['page_count']}")
-                
-            # Print line item count
-            if result.line_items:
-                print(f"Line items: {len(result.line_items)}")
-                
-                # Print a sample of line items
-                if len(result.line_items) > 0:
-                    print("\nSample line items:")
-                    for item in result.line_items[:5]:
-                        description = item.get('description', '')
-                        if len(description) > 50:
-                            description = description[:47] + "..."
-                        amount = item.get('amount')
-                        print(f"  - {description}: ${amount:.2f}" if amount else f"  - {description}")
-                    
-                    if len(result.line_items) > 5:
-                        print(f"  ... and {len(result.line_items) - 5} more items")
+            # Parse file extensions if provided
+            file_extensions = None
+            if args.extensions:
+                file_extensions = [ext.strip() for ext in args.extensions.split(',')]
+                # Add dot prefix if missing
+                file_extensions = [ext if ext.startswith('.') else f'.{ext}' for ext in file_extensions]
+            
+            # Process directory
+            results = factory.process_directory(
+                session,
+                path,
+                args.type,
+                args.party,
+                recursive=args.recursive,
+                file_extensions=file_extensions,
+                **processing_args
+            )
+            
+            # Summarize results
+            success_count = sum(1 for r in results.values() if r.success)
+            failed_count = len(results) - success_count
+            
+            print(f"Directory processing complete")
+            print(f"Processed {len(results)} documents")
+            print(f"- {success_count} documents processed successfully")
+            print(f"- {failed_count} documents failed")
+            
+            # Print details about processed documents
+            if success_count > 0:
+                print("\nSuccessfully processed documents:")
+                for file_path, result in results.items():
+                    if result.success:
+                        doc_path = Path(file_path)
+                        print(f"- {doc_path.name} (ID: {result.document_id})")
+            
+            # Print details about failed documents
+            if failed_count > 0:
+                print("\nFailed documents:")
+                for file_path, result in results.items():
+                    if not result.success:
+                        doc_path = Path(file_path)
+                        print(f"- {doc_path.name}: {result.error}")
         else:
-            logger.error(f"Error processing document: {result.error}")
+            # Single file processing
+            logger.info(f"Ingesting document: {path}")
+            
+            # Process document
+            result = factory.process_single_document(
+                session,
+                str(path),
+                args.type,
+                args.party,
+                **processing_args
+            )
+            
+            if result.success:
+                logger.info(f"Document processed successfully")
+                if result.document_id:
+                    logger.info(f"Document ID: {result.document_id}")
+                    
+                # Print basic information about the document
+                print(f"Document: {path.name}")
+                print(f"Type: {args.type}")
+                print(f"Party: {args.party}")
+                
+                if result.metadata.get('document_date'):
+                    print(f"Date: {result.metadata['document_date']}")
+                    
+                if 'page_count' in result.metadata:
+                    print(f"Pages: {result.metadata['page_count']}")
+                    
+                # Print line item count
+                if result.line_items:
+                    print(f"Line items: {len(result.line_items)}")
+                    
+                    # Print a sample of line items
+                    if len(result.line_items) > 0:
+                        print("\nSample line items:")
+                        for item in result.line_items[:5]:
+                            description = item.get('description', '')
+                            if len(description) > 50:
+                                description = description[:47] + "..."
+                            amount = item.get('amount')
+                            print(f"  - {description}: ${amount:.2f}" if amount else f"  - {description}")
+                        
+                        if len(result.line_items) > 5:
+                            print(f"  ... and {len(result.line_items) - 5} more items")
+            else:
+                logger.error(f"Error processing document: {result.error}")
 
 
 def list_documents(args):

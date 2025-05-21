@@ -117,7 +117,7 @@ with session_scope() as session:
         print(f"Error: {result.error}")
 ```
 
-You can also use the factory's convenience method:
+You can also use the factory's convenience methods:
 
 ```python
 from cdas.db.session import session_scope
@@ -136,6 +136,20 @@ with session_scope() as session:
     
     if result.success:
         print(f"Successfully processed document: {result.document_id}")
+        
+    # Process an entire directory of documents
+    results = factory.process_directory(
+        session,
+        "/path/to/documents/",
+        "invoice",
+        "contractor",
+        recursive=True,
+        file_extensions=['.pdf', '.xlsx']
+    )
+    
+    # Summarize results
+    success_count = sum(1 for r in results.values() if r.success)
+    print(f"Processed {len(results)} documents, {success_count} successful")
 ```
 
 ## Features
@@ -153,6 +167,7 @@ with session_scope() as session:
 ### Document Processor
 
 - Specialized extractors for each document type
+- Directory-based batch processing for multiple documents
 - OCR for scanned documents
 - Handwriting recognition capabilities
 - Extracts tabular data from structured documents
@@ -208,6 +223,7 @@ python -m cdas.db.reset
 
 # Document Management
 python -m cdas.cli doc ingest contract.pdf --type change_order --party contractor
+python -m cdas.cli doc ingest /path/to/documents/ --type invoice --party contractor --recursive
 python -m cdas.cli doc list --type payment_app
 python -m cdas.cli doc show doc_123abc --items
 
@@ -245,6 +261,7 @@ python -m cdas.cli shell
 
 # The shell provides a more user-friendly interface
 cdas> ingest contract.pdf --type contract --party district
+cdas> ingest /path/to/invoices/ --type invoice --party contractor --recursive
 cdas> list --type contract
 cdas> show doc_123abc --items
 

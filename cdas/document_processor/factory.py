@@ -203,3 +203,84 @@ class DocumentProcessorFactory:
         result = processor.process_document(file_path, doc_type, party, **kwargs)
         
         return result
+        
+    def process_directory(
+        self,
+        session: Session,
+        directory_path: Union[str, Path],
+        doc_type: Union[str, DocumentType],
+        party: Union[str, PartyType],
+        recursive: bool = False,
+        file_extensions: Optional[List[str]] = None,
+        **kwargs
+    ) -> Dict[str, ProcessingResult]:
+        """
+        Process all documents in a directory with the appropriate extractor.
+        
+        Args:
+            session: SQLAlchemy database session
+            directory_path: Path to the directory containing documents
+            doc_type: Document type for all documents in directory
+            party: Party associated with all documents in directory
+            recursive: Whether to process subdirectories recursively
+            file_extensions: List of file extensions to process (e.g., ['.pdf', '.xlsx'])
+                            If None, all supported file types will be processed
+            **kwargs: Additional processing arguments
+            
+        Returns:
+            Dictionary mapping file paths to ProcessingResult objects
+        """
+        logger.info(f"Processing documents in directory: {directory_path}")
+        
+        # Convert to Path object if string
+        if isinstance(directory_path, str):
+            directory_path = Path(directory_path)
+            
+        # Ensure directory exists
+        if not directory_path.exists() or not directory_path.is_dir():
+            logger.error(f"Directory not found or not a directory: {directory_path}")
+            return {}
+            
+        # Create processor
+        processor = self.create_processor(session)
+        
+        # Define default file extensions if not provided
+        if file_extensions is None:
+            file_extensions = ['.pdf', '.xlsx', '.xls', '.csv', '.docx', '.doc', 
+                              '.jpg', '.jpeg', '.png', '.tiff', '.tif', '.txt']
+        
+        # Find all files with supported extensions
+        results = {}
+        
+        # Determine glob pattern based on recursive flag
+        glob_pattern = '**/*' if recursive else '*'
+        
+        # Process all files with supported extensions
+        for file_path in directory_path.glob(glob_pattern):
+            # Skip directories
+            if file_path.is_dir():
+                continue
+                
+            # Check if file has supported extension
+            if file_path.suffix.lower() in file_extensions:
+                try:
+                    # Process document
+                    result = processor.process_document(
+                        str(file_path), doc_type, party, **kwargs
+                    )
+                    results[str(file_path)] = result
+                    
+                    if result.success:
+                        logger.info(f"Successfully processed: {file_path}")
+                    else:
+                        logger.warning(f"Failed to process: {file_path}. Error: {result.error}")
+                        
+                except Exception as e:
+                    logger.exception(f"Error processing {file_path}: {str(e)}")
+                    results[str(file_path)] = ProcessingResult(
+                        success=False,
+                        error=f"Unhandled error: {str(e)}"
+                    )
+        
+        logger.info(f"Completed processing directory. Processed {len(results)} files.")
+        return results
