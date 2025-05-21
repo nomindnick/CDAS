@@ -68,7 +68,7 @@ class CdasShell(cmd.Cmd):
     Type 'quit' or 'exit' to exit.
     
     Common commands:
-      ingest - Process and ingest a document into the system
+      ingest - Process and ingest a document or directory of documents
       list   - List documents in the system
       show   - Show details of a specific document
       search - Search for text in documents
@@ -78,6 +78,7 @@ class CdasShell(cmd.Cmd):
     Additional help:
       tutorial - Show a CDAS tutorial with examples
       examples - Show command examples
+      help ingest - View required and optional flags for document ingestion
     """
     
     # Colored intro (will be set in __init__ if color is supported)
@@ -108,7 +109,7 @@ class CdasShell(cmd.Cmd):
             )
             
             # Add color to command names
-            for cmd in ["ingest", "list", "show", "search", "ask", "report", "tutorial", "examples"]:
+            for cmd in ["ingest", "list", "show", "search", "ask", "report", "tutorial", "examples", "help ingest"]:
                 colored_intro = colored_intro.replace(
                     f"  {cmd}", f"  {Colors.GREEN}{cmd}{Colors.ENDC}"
                 )
@@ -165,22 +166,48 @@ class CdasShell(cmd.Cmd):
 
     # Document commands
     def do_ingest(self, arg):
-        """Ingest a document into the system.
+        """Ingest a document or directory of documents into the system.
         
-        Usage: ingest FILE_PATH --type DOCTYPE --party PARTY [--project PROJECT] 
+        Usage: ingest PATH --type DOCTYPE --party PARTY [--project PROJECT] 
+               [--recursive] [--extensions EXT1,EXT2,...]
                [--no-db] [--no-handwriting] [--no-tables]
+        
+        Required flags:
+          --type    Document type (e.g., invoice, contract, change_order)
+          --party   Party associated with document (e.g., contractor, owner)
+        
+        Optional flags:
+          --project     Project identifier to associate with document(s)
+          --recursive   Process subdirectories (only for directory ingestion)
+          --extensions  Comma-separated list of file extensions (only for directory ingestion)
+          --no-db       Skip saving to database
+          --no-handwriting  Skip handwriting extraction
+          --no-tables   Skip table extraction
+        
+        PATH can be a file path or a directory path. If a directory is specified, 
+        all documents in the directory with supported extensions will be processed.
+        All documents in a directory will use the same document type and party values.
         
         Examples:
             ingest /path/to/doc.pdf --type invoice --party contractor --project school_123
             ingest contract.pdf --type contract --party district
+            ingest /path/to/documents/ --type invoice --party contractor --recursive
+            ingest ./invoices/ --type invoice --party contractor --extensions pdf,xlsx
         """
-        parser = argparse.ArgumentParser(prog='ingest', description='Ingest a document')
-        parser.add_argument('file_path', help='Path to the document file')
+        parser = argparse.ArgumentParser(prog='ingest', description='Ingest a document or directory of documents')
+        # Required arguments
+        parser.add_argument('path', help='Path to the document file or directory')
         parser.add_argument('--type', choices=self.doc_types, required=True,
-                            help='Type of document')
+                            help='REQUIRED: Type of document(s)')
         parser.add_argument('--party', choices=self.party_types, required=True,
-                            help='Party associated with the document')
+                            help='REQUIRED: Party associated with the document(s)')
+        
+        # Optional arguments
         parser.add_argument('--project', help='Project identifier')
+        parser.add_argument('--recursive', action='store_true',
+                            help='Recursively process subdirectories (only applicable when path is a directory)')
+        parser.add_argument('--extensions',
+                            help='Comma-separated list of file extensions to process (e.g., "pdf,xlsx") (only applicable when path is a directory)')
         parser.add_argument('--no-db', action='store_true',
                             help='Do not save to database')
         parser.add_argument('--no-handwriting', action='store_true',
@@ -450,7 +477,7 @@ Basic Workflow:
 
 Example Session:
 --------------
-# Ingest a document
+# Ingest a document (required flags: --type and --party)
 ingest /path/to/invoice.pdf --type invoice --party contractor
 
 # List documents
@@ -481,7 +508,7 @@ CDAS can process various document types including:
 
 Document Ingestion:
 -----------------
-# Basic ingestion
+# Basic ingestion (required flags: --type and --party)
 ingest contract.pdf --type contract --party district
 
 # Ingestion with options
@@ -614,7 +641,7 @@ Example: tutorial basic
             'ingest': """
 Ingest Command Examples:
 ======================
-# Basic document ingestion
+# Basic document ingestion (required flags: --type and --party)
 ingest contract.pdf --type contract --party district
 
 # Detailed ingestion with options
@@ -628,6 +655,30 @@ ingest spreadsheet.pdf --type payment_app --party contractor --no-tables
 
 # Just analyze without saving to database
 ingest document.pdf --type change_order --party contractor --no-db
+
+# Directory ingestion (process all PDFs in a directory)
+ingest /path/to/invoices/ --type invoice --party contractor
+
+# Directory ingestion with recursion (including subdirectories)
+ingest /path/to/documents/ --type correspondence --party district --recursive
+
+# Directory ingestion with specific file extensions
+ingest ./project_files/ --type payment_app --party contractor --extensions pdf,xlsx
+
+# Directory ingestion with project context
+ingest /path/to/change_orders/ --type change_order --party contractor --project school_123 --recursive
+
+# Batch processing an entire project structure
+ingest /path/to/project/ --type invoice --party contractor --recursive --extensions pdf,xlsx,tiff
+
+# Processing with document organization
+# - When documents are organized by type in subdirectories
+ingest /path/to/project/invoices/ --type invoice --party contractor
+ingest /path/to/project/change_orders/ --type change_order --party contractor
+ingest /path/to/project/correspondence/ --type correspondence --party district
+
+# Organizing a document dump by date for chronological analysis
+ingest /path/to/document_dump/ --type correspondence --party contractor --project school_123 --recursive
 """,
             'list': """
 List Command Examples:
@@ -844,11 +895,13 @@ Example: examples ingest
 
     def complete_type(self, text, line, begidx, endidx):
         """Complete document types."""
-        return [t for t in self.doc_types if t.startswith(text)]
+        # Add "(required)" to highlight this is a required field
+        return [f"{t} (required)" for t in self.doc_types if t.startswith(text)]
 
     def complete_party(self, text, line, begidx, endidx):
         """Complete party types."""
-        return [p for p in self.party_types if p.startswith(text)]
+        # Add "(required)" to highlight this is a required field
+        return [f"{p} (required)" for p in self.party_types if p.startswith(text)]
 
     def complete_project(self, text, line, begidx, endidx):
         """Complete project IDs."""
@@ -910,15 +963,23 @@ Example: examples ingest
         """Complete ingest command arguments."""
         words = line.split()
         
-        # Handle file completion
+        # Handle file/directory completion
         if (len(words) == 2 and not text) or (len(words) == 1 and text):
-            # Right after command, show a file list
+            # Right after command, show a file/directory list
             return self._complete_path(text, line, begidx, endidx)
         
         # Handle flags
         if text.startswith('-'):
-            options = ['--type', '--party', '--project', '--no-db', '--no-handwriting', '--no-tables']
-            return [opt for opt in options if opt.startswith(text)]
+            # Indicate which flags are required vs optional
+            required_options = ['--type', '--party']
+            optional_options = ['--project', '--recursive', '--extensions',
+                              '--no-db', '--no-handwriting', '--no-tables']
+            
+            # Format options to indicate required vs optional
+            formatted_options = [f"{opt} (required)" for opt in required_options if opt.startswith(text)]
+            formatted_options.extend([opt for opt in optional_options if opt.startswith(text)])
+            
+            return formatted_options
         
         # Handle flag values
         prev_word = words[words.index(text) - 1] if text in words else words[-1]
@@ -931,6 +992,18 @@ Example: examples ingest
         
         if prev_word == '--project':
             return self.complete_project(text, line, begidx, endidx)
+        
+        if prev_word == '--extensions':
+            # Suggest common file extensions
+            common_extensions = ['pdf', 'xlsx', 'xls', 'csv', 'docx', 'doc', 
+                                'jpg', 'jpeg', 'png', 'tiff', 'tif', 'txt']
+            # If text contains a comma, suggest extensions for the part after the last comma
+            if ',' in text:
+                prefix = text.rsplit(',', 1)[0] + ','
+                suffix_text = text.rsplit(',', 1)[1]
+                return [prefix + ext for ext in common_extensions if ext.startswith(suffix_text)]
+            else:
+                return [ext for ext in common_extensions if ext.startswith(text)]
         
         return []
         
