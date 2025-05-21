@@ -11,6 +11,7 @@ The Construction Document Analysis System (CDAS) is designed for attorneys repre
 3. Detect suspicious financial patterns (e.g., rejected change orders reappearing in payment applications)
 4. Generate comprehensive reports for dispute resolution conferences
 5. Provide evidence-backed analysis with direct citations to source documents
+6. **Manage multiple construction disputes as separate, isolated projects**
 
 ## Project Structure
 
@@ -48,29 +49,47 @@ pip install -e .
 # Or with dev dependencies
 pip install -e ".[dev]"
 
-# Initialize database
+# Initialize database (creates default project database)
 python -m cdas.db.init
 ```
 
 ## Getting Started
 
+### Project Management
+
+CDAS supports project-based data isolation. Each project maintains its own database, ensuring complete separation between different construction disputes:
+
+```bash
+# Create a new project for your case
+python -m cdas.cli project create school_renovation_2024
+
+# List all projects
+python -m cdas.cli project list
+
+# Switch to a project (sets as current for subsequent commands)
+python -m cdas.cli project use school_renovation_2024
+
+# Delete a project (removes all data)
+python -m cdas.cli project delete old_project_name
+```
+
 ### Database Setup
 
-The system uses a database to store document information, extracted data, and analysis results:
+The system uses separate SQLite databases for each project to store document information, extracted data, and analysis results:
 
 ```python
 from cdas.db.session import session_scope
 from cdas.db.operations import register_document
 
-# Use the session context manager for transactions
-with session_scope() as session:
+# Use the session context manager for transactions with project context
+with session_scope(project_id="school_renovation_2024") as session:
     # Register a document
     doc = register_document(
         session,
         file_path="path/to/document.pdf",
         doc_type="change_order",
         party="contractor",
-        metadata={"project": "School Renovation"}
+        metadata={"reference": "CO-2024-001"}
     )
 
     print(f"Document registered with ID: {doc.doc_id}")
@@ -92,8 +111,8 @@ from cdas.db.session import session_scope
 from cdas.document_processor.factory import DocumentProcessorFactory
 from cdas.document_processor.processor import DocumentType, PartyType
 
-# Use session context manager
-with session_scope() as session:
+# Use session context manager with project
+with session_scope(project_id="school_renovation_2024") as session:
     # Create document processor
     factory = DocumentProcessorFactory()
     processor = factory.create_processor(session)
@@ -123,7 +142,7 @@ You can also use the factory's convenience methods:
 from cdas.db.session import session_scope
 from cdas.document_processor.factory import DocumentProcessorFactory
 
-with session_scope() as session:
+with session_scope(project_id="school_renovation_2024") as session:
     factory = DocumentProcessorFactory()
     
     # Process a single document in one call
@@ -154,7 +173,16 @@ with session_scope() as session:
 
 ## Features
 
-### Database Schema
+### Project Database Isolation
+
+- **Separate SQLite databases per project** for complete data isolation
+- Each project maintains independent document storage and metadata
+- Project-specific financial analysis results and reporting data
+- Separate AI embeddings and search indices per project
+- Safe project deletion without affecting other cases
+- Concurrent work on multiple projects by different users
+
+### Database Schema (Per Project)
 
 - Comprehensive schema for storing construction document data
 - Support for document metadata, pages, and line items

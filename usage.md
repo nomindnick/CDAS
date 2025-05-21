@@ -6,15 +6,16 @@ This guide provides comprehensive instructions for using the Construction Docume
 
 1. [Introduction](#introduction)
 2. [Installation & Setup](#installation--setup)
-3. [Command-Line Interface](#command-line-interface)
-4. [Interactive Shell](#interactive-shell)
-5. [Document Management](#document-management)
-6. [Financial Analysis](#financial-analysis)
-7. [Network Analysis](#network-analysis)
-8. [Reporting](#reporting)
-9. [AI-Assisted Analysis](#ai-assisted-analysis)
-10. [Common Workflows](#common-workflows)
-11. [Troubleshooting](#troubleshooting)
+3. [Project Management](#project-management)
+4. [Command-Line Interface](#command-line-interface)
+5. [Interactive Shell](#interactive-shell)
+6. [Document Management](#document-management)
+7. [Financial Analysis](#financial-analysis)
+8. [Network Analysis](#network-analysis)
+9. [Reporting](#reporting)
+10. [AI-Assisted Analysis](#ai-assisted-analysis)
+11. [Common Workflows](#common-workflows)
+12. [Troubleshooting](#troubleshooting)
 
 ## Introduction
 
@@ -73,6 +74,9 @@ python -m cdas.db.init
 
 # Run database migrations
 alembic upgrade head
+
+# Or migrate all existing projects (if any)
+alembic upgrade head --all-projects
 ```
 
 ### Step 4: Verify Installation
@@ -81,6 +85,54 @@ alembic upgrade head
 # Run the CLI application to verify installation
 python -m cdas.cli --help
 ```
+
+## Project Management
+
+CDAS supports project-based data isolation, allowing you to manage multiple construction disputes as separate projects. Each project maintains its own database, ensuring complete data separation between different cases.
+
+### Creating and Managing Projects
+
+```bash
+# List all projects
+python -m cdas.cli project list
+
+# Create a new project
+python -m cdas.cli project create school_renovation_2024
+
+# Switch to a project (sets it as current for commands)
+python -m cdas.cli project use school_renovation_2024
+
+# Delete a project (removes all data - use with caution)
+python -m cdas.cli project delete old_project_name
+```
+
+### Working with Projects
+
+Once you have created a project, you can work within its context:
+
+```bash
+# Use project flag with any command
+python -m cdas.cli --project school_renovation_2024 doc ingest contract.pdf --type contract --party district
+
+# Or set the current project and omit the flag
+python -m cdas.cli project use school_renovation_2024
+python -m cdas.cli doc ingest contract.pdf --type contract --party district
+```
+
+### Project Database Isolation
+
+Each project maintains:
+- Separate SQLite database file
+- Independent document storage and metadata
+- Isolated financial analysis results
+- Project-specific reporting data
+- Separate AI embeddings and search indices
+
+This ensures that:
+- Different construction disputes remain completely separate
+- You can reset/delete one project without affecting others
+- Development and testing can be done safely on isolated data
+- Multiple attorneys can work on different projects simultaneously
 
 ## Command-Line Interface
 
@@ -94,12 +146,13 @@ python -m cdas.cli [GLOBAL_OPTIONS] COMMAND [SUBCOMMAND] [ARGUMENTS] [OPTIONS]
 
 ```bash
 --user USER         User identifier for tracking who created reports
---project PROJECT   Project identifier
+--project PROJECT   Project identifier (overrides current project)
 --verbose, -v       Enable verbose logging
 ```
 
 ### Main Commands
 
+- `project` - Project management commands
 - `doc` - Document management commands
 - `analyze` - Financial analysis commands
 - `query` - Querying and search commands
@@ -114,6 +167,7 @@ python -m cdas.cli [GLOBAL_OPTIONS] COMMAND [SUBCOMMAND] [ARGUMENTS] [OPTIONS]
 python -m cdas.cli --help
 
 # Get help on a specific command
+python -m cdas.cli project --help
 python -m cdas.cli doc --help
 python -m cdas.cli analyze --help
 python -m cdas.cli report --help
@@ -130,7 +184,7 @@ CDAS provides an interactive shell interface that offers a more user-friendly ex
 python -m cdas.cli shell
 
 # Start with project context
-python -m cdas.cli shell --project school_123
+python -m cdas.cli shell --project school_renovation_2024
 ```
 
 ### Shell Features
@@ -138,7 +192,8 @@ python -m cdas.cli shell --project school_123
 - **Command History**: Use up and down arrow keys to navigate through previous commands
 - **Tab Completion**: Press Tab to complete commands, document IDs, file paths, etc.
 - **Contextual Help**: Get detailed guidance on using commands and their options
-- **Context Management**: Set and maintain project context between commands
+- **Project Context Management**: Set and maintain project context between commands
+- **Project Commands**: Create, switch, and manage projects directly from the shell
 - **Tutorials and Examples**: Access built-in tutorials and command examples
 
 ### Basic Shell Usage
@@ -194,26 +249,42 @@ cdas> tutorial documents
 cdas> examples report
 ```
 
-### Context Management
+### Project Management in the Shell
 
-You can set a project context to work within a specific project:
+The interactive shell provides convenient project management commands:
 
 ```
-# Set project context
-cdas> project school_123
-Project context set to: school_123
+# List all projects
+cdas> projects
+Available projects:
+- school_renovation_2024 (current)
+- district_vs_contractor_2023
+- bridge_project_2024
 
-# Now prompt shows the context
-cdas:school_123> list
+# Create a new project
+cdas> project create new_school_project
+Project 'new_school_project' created successfully
+
+# Switch to a different project
+cdas> project new_school_project
+Project context set to: new_school_project
+
+# Now prompt shows the project context
+cdas:new_school_project> list
 ...
 
-# Show current context
-cdas:school_123> context
-Current context:
-  project: school_123
+# Delete a project (with confirmation)
+cdas> project delete old_project
+Are you sure you want to delete project 'old_project'? This will remove all data. (y/N): y
+Project 'old_project' deleted successfully
 
-# Clear context
-cdas:school_123> context clear
+# Show current context
+cdas:new_school_project> context
+Current context:
+  project: new_school_project
+
+# Clear context (return to no project)
+cdas:new_school_project> context clear
 Context cleared
 cdas>
 ```
@@ -236,16 +307,20 @@ CDAS can process various document types including PDFs, Excel files, and scanned
 ### Importing Documents
 
 ```bash
-# Import a single document
-python -m cdas.cli doc ingest path/to/document.pdf --type payment_app --party contractor
+# Import a single document (with project context)
+python -m cdas.cli --project school_renovation_2024 doc ingest path/to/document.pdf --type payment_app --party contractor
 
 # Import multiple documents from a CSV manifest
-python -m cdas.cli doc batch-import manifest.csv
+python -m cdas.cli --project school_renovation_2024 doc batch-import manifest.csv
 
 # CSV format example:
 # path,type,party,date,reference
 # documents/contract.pdf,contract,district,2023-01-15,Contract-2023-001
 # documents/invoice1.pdf,invoice,contractor,2023-02-20,INV-2023-001
+
+# Import using current project (if set with 'project use')
+python -m cdas.cli project use school_renovation_2024
+python -m cdas.cli doc ingest path/to/document.pdf --type payment_app --party contractor
 ```
 
 ### Listing Documents
@@ -410,19 +485,46 @@ python -m cdas.cli report narrative hvac_issues.pdf --focus "HVAC billing issues
 
 Here are some common workflows to help you get started:
 
-### Basic Document Import and Analysis
+### Setting Up a New Project
 
 ```bash
-# 1. Import documents
+# 1. Create a new project for your case
+python -m cdas.cli project create school_renovation_2024
+
+# 2. Set it as the current project
+python -m cdas.cli project use school_renovation_2024
+
+# 3. Import documents
 python -m cdas.cli doc ingest contract.pdf --type contract --party district
 python -m cdas.cli doc ingest invoice1.pdf --type invoice --party contractor
 python -m cdas.cli doc ingest invoice2.pdf --type invoice --party contractor
 
-# 2. Run basic analysis
+# 4. Run basic analysis
 python -m cdas.cli analyze patterns
 
-# 3. Generate summary report
+# 5. Generate summary report
 python -m cdas.cli report summary summary_report.pdf
+```
+
+### Working with Multiple Projects
+
+```bash
+# List all projects to see what you're working with
+python -m cdas.cli project list
+
+# Work on one project
+python -m cdas.cli project use school_renovation_2024
+python -m cdas.cli doc list
+python -m cdas.cli analyze patterns
+
+# Switch to another project
+python -m cdas.cli project use bridge_project_2023
+python -m cdas.cli doc list
+python -m cdas.cli report summary bridge_summary.pdf
+
+# Or use project flag without switching
+python -m cdas.cli --project school_renovation_2024 doc list
+python -m cdas.cli --project bridge_project_2023 doc list
 ```
 
 ### Investigating a Specific Issue
