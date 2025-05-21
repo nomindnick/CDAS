@@ -6,13 +6,15 @@ This guide provides comprehensive instructions for using the Construction Docume
 
 1. [Introduction](#introduction)
 2. [Installation & Setup](#installation--setup)
-3. [Document Management](#document-management)
-4. [Financial Analysis](#financial-analysis)
-5. [Network Analysis](#network-analysis)
-6. [Reporting](#reporting)
-7. [AI-Assisted Analysis](#ai-assisted-analysis)
-8. [Common Workflows](#common-workflows)
-9. [Troubleshooting](#troubleshooting)
+3. [Command-Line Interface](#command-line-interface)
+4. [Interactive Shell](#interactive-shell)
+5. [Document Management](#document-management)
+6. [Financial Analysis](#financial-analysis)
+7. [Network Analysis](#network-analysis)
+8. [Reporting](#reporting)
+9. [AI-Assisted Analysis](#ai-assisted-analysis)
+10. [Common Workflows](#common-workflows)
+11. [Troubleshooting](#troubleshooting)
 
 ## Introduction
 
@@ -79,6 +81,153 @@ alembic upgrade head
 # Run the CLI application to verify installation
 python -m cdas.cli --help
 ```
+
+## Command-Line Interface
+
+CDAS provides a comprehensive command-line interface for all system operations. The CLI follows a consistent structure:
+
+```bash
+python -m cdas.cli [GLOBAL_OPTIONS] COMMAND [SUBCOMMAND] [ARGUMENTS] [OPTIONS]
+```
+
+### Global Options
+
+```bash
+--user USER         User identifier for tracking who created reports
+--project PROJECT   Project identifier
+--verbose, -v       Enable verbose logging
+```
+
+### Main Commands
+
+- `doc` - Document management commands
+- `analyze` - Financial analysis commands
+- `query` - Querying and search commands
+- `report` - Reporting commands
+- `network` - Network analysis commands
+- `shell` - Start the interactive shell
+
+### Getting Help
+
+```bash
+# Get general help
+python -m cdas.cli --help
+
+# Get help on a specific command
+python -m cdas.cli doc --help
+python -m cdas.cli analyze --help
+python -m cdas.cli report --help
+```
+
+## Interactive Shell
+
+CDAS provides an interactive shell interface that offers a more user-friendly experience with features like command history, tab completion, and contextual help.
+
+### Starting the Shell
+
+```bash
+# Start the interactive shell
+python -m cdas.cli shell
+
+# Start with project context
+python -m cdas.cli shell --project school_123
+```
+
+### Shell Features
+
+- **Command History**: Use up and down arrow keys to navigate through previous commands
+- **Tab Completion**: Press Tab to complete commands, document IDs, file paths, etc.
+- **Contextual Help**: Get detailed guidance on using commands and their options
+- **Context Management**: Set and maintain project context between commands
+- **Tutorials and Examples**: Access built-in tutorials and command examples
+
+### Basic Shell Usage
+
+Once in the shell, you can run all the same commands as the CLI but without the `python -m cdas.cli` prefix:
+
+```
+Construction Document Analysis System (CDAS) - Interactive Shell
+----------------------------------------------------------------
+Type 'help' or '?' to list commands.
+Type 'help <command>' for detailed help on a specific command.
+Type 'quit' or 'exit' to exit.
+
+Common commands:
+  ingest - Process and ingest a document into the system
+  list   - List documents in the system
+  show   - Show details of a specific document
+  search - Search for text in documents
+  ask    - Ask a natural language question about the data
+  report - Generate various types of reports
+
+cdas> ingest contract.pdf --type contract --party district
+Document: contract.pdf
+Type: contract
+Party: district
+Line items: 15
+
+cdas> list --type contract
+Found 1 documents:
+ID       | Type    | Party    | Date       | File Name
+----------------------------------------------
+doc_123a | contract | district | 2023-05-15 | contract.pdf
+```
+
+### Getting Help in the Shell
+
+The interactive shell provides several ways to get help:
+
+```
+# List all available commands
+cdas> help
+
+# Get help for a specific command
+cdas> help ingest
+
+# Show a tutorial with examples
+cdas> tutorial
+
+# Show tutorials on a specific topic
+cdas> tutorial documents
+
+# Show examples of a specific command
+cdas> examples report
+```
+
+### Context Management
+
+You can set a project context to work within a specific project:
+
+```
+# Set project context
+cdas> project school_123
+Project context set to: school_123
+
+# Now prompt shows the context
+cdas:school_123> list
+...
+
+# Show current context
+cdas:school_123> context
+Current context:
+  project: school_123
+
+# Clear context
+cdas:school_123> context clear
+Context cleared
+cdas>
+```
+
+### Exiting the Shell
+
+```
+# Exit methods
+cdas> exit
+cdas> quit
+# Or press Ctrl+D
+```
+
+For more detailed information on using the interactive shell, see [Interactive Shell Documentation](docs/interactive_shell.md).
 
 ## Document Management
 
@@ -357,6 +506,18 @@ python -m cdas.cli --help
 python -m cdas.cli doc --help
 python -m cdas.cli analyze --help
 python -m cdas.cli report --help
+```
+
+For easier troubleshooting, use the interactive shell which provides better guidance and command completion:
+```bash
+python -m cdas.cli shell
+cdas> help
+```
+
+You can also use the shell's built-in tutorials and examples:
+```bash
+cdas> tutorial
+cdas> examples
 ```
 
 For additional assistance, please refer to the documentation or contact support.

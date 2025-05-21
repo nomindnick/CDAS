@@ -195,7 +195,9 @@ with session_scope() as session:
 - Screenshot integration for visual evidence
 - Template-based generation with Jinja2
 
-## CLI Usage
+## User Interfaces
+
+### Command Line Interface
 
 The system provides a comprehensive command-line interface:
 
@@ -232,6 +234,41 @@ python -m cdas.cli --help
 python -m cdas.cli doc --help
 python -m cdas.cli analyze --help
 ```
+
+### Interactive Shell
+
+CDAS also provides an interactive shell for easier command execution with features like command history, tab completion, and contextual help:
+
+```bash
+# Start the interactive shell
+python -m cdas.cli shell
+
+# The shell provides a more user-friendly interface
+cdas> ingest contract.pdf --type contract --party district
+cdas> list --type contract
+cdas> show doc_123abc --items
+
+# Get help within the shell
+cdas> help
+cdas> tutorial
+cdas> examples report
+
+# Set project context
+cdas> project school_123
+cdas:school_123> 
+
+# Exit the shell
+cdas> exit
+```
+
+The interactive shell offers:
+- Command history with arrow key navigation
+- Tab completion for commands, file paths, and arguments
+- Built-in tutorials and example commands
+- Context management to maintain project focus
+- Detailed help system with usage examples
+
+For detailed documentation on the interactive shell, see [Interactive Shell Documentation](docs/interactive_shell.md).
 
 ## Financial Analysis
 
@@ -453,6 +490,7 @@ For detailed documentation, refer to the following:
 
 - [AI Integration](docs/ai-integration.md)
 - [CI/CD Pipeline](docs/ci_cd.md)
+- [Interactive Shell](docs/interactive_shell.md)
 - [AI Integration Specification](ai-integration-spec.md)
 - [CLI Specification](cli-specification.md)
 - [Database Schema Specification](database-schema-spec.md)
@@ -460,6 +498,7 @@ For detailed documentation, refer to the following:
 - [Financial Analysis Specification](financial-analysis-spec.md)
 - [Reporting System Specification](reporting-system-spec.md)
 - [Testing Guide](tests/README.md)
+- [Usage Guide](usage.md)
 
 ## Development
 

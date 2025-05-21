@@ -841,6 +841,18 @@ def generate_report(args, report_type):
             pass
 
 
+def setup_shell_command(subparsers):
+    """Set up interactive shell command.
+    
+    Args:
+        subparsers: argparse subparsers object
+    """
+    # Shell command
+    shell_parser = subparsers.add_parser('shell', help='Start interactive shell')
+    shell_parser.add_argument('--project', 
+                             help='Set initial project context')
+
+
 def parse_args(args=None):
     """Parse command-line arguments.
     
@@ -860,21 +872,56 @@ def parse_args(args=None):
     setup_analyze_commands(subparsers)
     setup_query_commands(subparsers)
     setup_report_commands(subparsers)
+    setup_shell_command(subparsers)
     
     # Add global arguments
     parser.add_argument('--user', help='User identifier for tracking who created reports')
     parser.add_argument('--project', help='Project identifier')
+    parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose logging')
     
     # Parse arguments
     return parser.parse_args(args)
+
+
+def start_shell(args):
+    """Start the interactive shell.
+    
+    Args:
+        args: Command-line arguments
+    """
+    logger.info("Starting interactive shell")
+    
+    # Import here to avoid circular imports
+    from cdas.interactive_shell import CdasShell
+    
+    # Create and start shell
+    shell = CdasShell()
+    
+    # Set initial project context if provided
+    if hasattr(args, 'project') and args.project:
+        shell.do_project(args.project)
+    
+    try:
+        shell.cmdloop()
+    except KeyboardInterrupt:
+        print("\nKeyboard interrupt. Exiting...")
+    finally:
+        shell.save_history()
 
 
 def main():
     """Main entry point for the CDAS CLI."""
     args = parse_args()
     
+    # Configure logging based on verbosity
+    if hasattr(args, 'verbose') and args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+        logger.debug("Verbose logging enabled")
+    
     # Handle commands
-    if args.command == 'doc':
+    if args.command == 'shell':
+        start_shell(args)
+    elif args.command == 'doc':
         if args.doc_command == 'ingest':
             ingest_document(args)
         elif args.doc_command == 'list':
@@ -882,6 +929,7 @@ def main():
         elif args.doc_command == 'show':
             show_document(args)
         else:
+            parser = argparse.ArgumentParser(description='Document management commands')
             parser.print_help()
     elif args.command == 'analyze':
         if args.analyze_command == 'patterns':
@@ -891,6 +939,7 @@ def main():
         elif args.analyze_command == 'document':
             analyze_document(args)
         else:
+            parser = argparse.ArgumentParser(description='Financial analysis commands')
             parser.print_help()
     elif args.command == 'query':
         if args.query_command == 'search':
@@ -900,6 +949,7 @@ def main():
         elif args.query_command == 'ask':
             ask_question(args)
         else:
+            parser = argparse.ArgumentParser(description='Querying commands')
             parser.print_help()
     elif args.command == 'report':
         if args.report_command == 'summary':
@@ -909,8 +959,10 @@ def main():
         elif args.report_command == 'evidence':
             generate_report(args, 'evidence')
         else:
+            parser = argparse.ArgumentParser(description='Reporting commands')
             parser.print_help()
     else:
+        parser = argparse.ArgumentParser(description='Construction Document Analysis System')
         parser.print_help()
 
 
