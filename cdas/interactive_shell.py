@@ -17,7 +17,7 @@ import platform
 from typing import Dict, List, Any, Optional, Callable
 from pathlib import Path
 
-from cdas.db.session import get_session, session_scope
+from cdas.db.project_manager import get_project_db_manager, get_session, session_scope
 from cdas.document_processor.factory import DocumentProcessorFactory
 from cdas.document_processor.processor import DocumentType, PartyType
 from cdas.financial_analysis.engine import FinancialAnalysisEngine
@@ -47,7 +47,7 @@ from cdas.cli import (
     ingest_document, list_documents, show_document,
     analyze_patterns, analyze_amount, analyze_document,
     search_documents, find_line_items, ask_question,
-    generate_report
+    generate_report, manage_projects
 )
 
 # Set up logging
@@ -75,6 +75,10 @@ class CdasShell(cmd.Cmd):
       ask    - Ask a natural language question about the data
       report - Generate various types of reports
     
+    Project management:
+      project   - Set or view current project
+      projects  - List all available projects
+      
     Additional help:
       tutorial - Show a CDAS tutorial with examples
       examples - Show command examples
@@ -89,7 +93,14 @@ class CdasShell(cmd.Cmd):
     def __init__(self):
         """Initialize the CDAS shell."""
         super().__init__()
-        self.session = get_session()
+        self.project_manager = get_project_db_manager()
+        
+        # Get session with current project context (or None)
+        try:
+            self.session = get_session()
+        except ValueError:
+            # No project context set yet
+            self.session = None
         
         # Setup colors if supported
         self.use_colors = Colors.supports_color()
@@ -104,18 +115,30 @@ class CdasShell(cmd.Cmd):
                 f"{Colors.BOLD}Common commands:{Colors.ENDC}"
             )
             colored_intro = colored_intro.replace(
+                "Project management:",
+                f"{Colors.BOLD}Project management:{Colors.ENDC}"
+            )
+            colored_intro = colored_intro.replace(
                 "Additional help:",
                 f"{Colors.BOLD}Additional help:{Colors.ENDC}"
             )
             
             # Add color to command names
-            for cmd in ["ingest", "list", "show", "search", "ask", "report", "tutorial", "examples", "help ingest"]:
+            for cmd in ["ingest", "list", "show", "search", "ask", "report", 
+                       "project", "projects", "tutorial", "examples", "help ingest"]:
                 colored_intro = colored_intro.replace(
                     f"  {cmd}", f"  {Colors.GREEN}{cmd}{Colors.ENDC}"
                 )
             
             self.intro = colored_intro
             self.prompt = f"{Colors.CYAN}cdas>{Colors.ENDC} "
+            
+            # Set project-aware prompt if a project is active
+            current_project = self.project_manager.get_current_project()
+            if current_project:
+                self.prompt = f"{Colors.CYAN}cdas:{Colors.YELLOW}{current_project}{Colors.CYAN}>{Colors.ENDC} "
+                # Initialize context
+                self.current_context = {'project': current_project}
         
         # Store history
         history_path = Path.home() / '.cdas_history'
@@ -217,6 +240,10 @@ class CdasShell(cmd.Cmd):
         
         args = self.parse_args(arg, parser)
         if args:
+            # Add current project context if no project specified in args
+            if not args.project and self.current_context and 'project' in self.current_context:
+                args.project = self.current_context['project']
+                
             ingest_document(args)
 
     def do_list(self, arg):
@@ -241,6 +268,10 @@ class CdasShell(cmd.Cmd):
         
         args = self.parse_args(arg, parser)
         if args:
+            # Add current project context if no project specified in args
+            if not args.project and self.current_context and 'project' in self.current_context:
+                args.project = self.current_context['project']
+                
             list_documents(args)
 
     def do_show(self, arg):
@@ -264,8 +295,15 @@ class CdasShell(cmd.Cmd):
         if args:
             show_document(args)
             # Update current context
-            self.current_context = {'doc_id': args.doc_id}
-            self.prompt = f'cdas:{args.doc_id}> '
+            self.current_context = self.current_context or {}
+            self.current_context['doc_id'] = args.doc_id
+            
+            # Update prompt to show document context
+            project_part = f":{self.current_context.get('project')}" if 'project' in self.current_context else ""
+            if self.use_colors:
+                self.prompt = f"{Colors.CYAN}cdas{project_part}:{Colors.GREEN}{args.doc_id}{Colors.CYAN}>{Colors.ENDC} "
+            else:
+                self.prompt = f"cdas{project_part}:{args.doc_id}> "
 
     # Analysis commands
     def do_patterns(self, arg):
@@ -420,7 +458,135 @@ class CdasShell(cmd.Cmd):
         
         args = self.parse_args(arg, parser)
         if args and args.report_command:
+            # Add current project context
+            if self.current_context and 'project' in self.current_context:
+                args.project = self.current_context['project']
+                
             generate_report(args, args.report_command)
+
+    # Project management commands
+    def do_project(self, arg):
+        """Set or view the current project context.
+        
+        Usage: project [PROJECT_ID]
+        
+        If PROJECT_ID is provided, sets the current project context.
+        If not provided, displays the current project context.
+        
+        Examples:
+            project school_123  # Set project context to school_123
+            project             # View current project context
+        """
+        arg = arg.strip()
+        if arg:
+            # Set project context
+            if self.project_manager.set_current_project(arg):
+                # Update context and session
+                self.current_context = self.current_context or {}
+                self.current_context['project'] = arg
+                self.session = get_session()
+                
+                # Update prompt
+                if self.use_colors:
+                    self.prompt = f"{Colors.CYAN}cdas:{Colors.YELLOW}{arg}{Colors.CYAN}>{Colors.ENDC} "
+                else:
+                    self.prompt = f"cdas:{arg}> "
+                    
+                print(f"Project context set to: {self.colorize(arg, Colors.YELLOW)}")
+            else:
+                print(f"Failed to set project context: {arg}")
+        else:
+            # Display current project
+            current = self.project_manager.get_current_project()
+            if current:
+                print(f"Current project: {self.colorize(current, Colors.YELLOW)}")
+            else:
+                print("No project currently selected.")
+    
+    def do_projects(self, arg):
+        """List all available projects.
+        
+        Usage: projects
+        
+        Lists all projects in the system and indicates the current active project.
+        
+        Examples:
+            projects
+        """
+        # List all projects
+        projects = self.project_manager.get_project_list()
+        current = self.project_manager.get_current_project()
+        
+        if not projects:
+            print("No projects found.")
+            return
+        
+        print("Available projects:")
+        for project in projects:
+            if project == current:
+                print(f"* {self.colorize(project, Colors.YELLOW)} (current)")
+            else:
+                print(f"  {project}")
+    
+    def do_project_create(self, arg):
+        """Create a new project.
+        
+        Usage: project_create PROJECT_ID
+        
+        Creates a new project with the specified identifier.
+        
+        Examples:
+            project_create school_123
+        """
+        if not arg.strip():
+            print("Please provide a project ID")
+            return
+            
+        project_id = arg.strip()
+        if self.project_manager.create_project(project_id):
+            print(f"Created project: {project_id}")
+        else:
+            print(f"Failed to create project: {project_id}")
+    
+    def do_project_delete(self, arg):
+        """Delete a project.
+        
+        Usage: project_delete PROJECT_ID [--force]
+        
+        Deletes the specified project. By default, this will prompt for confirmation.
+        Use --force to skip the confirmation prompt.
+        
+        Examples:
+            project_delete school_123
+            project_delete school_123 --force
+        """
+        parser = argparse.ArgumentParser(prog='project_delete', description='Delete a project')
+        parser.add_argument('project_id', help='Project identifier')
+        parser.add_argument('--force', action='store_true', help='Skip confirmation prompt')
+        
+        args = self.parse_args(arg, parser)
+        if args:
+            # Confirm deletion unless --force is specified
+            if not args.force:
+                confirm = input(f"Are you sure you want to delete project '{args.project_id}'? This cannot be undone. (y/N) ")
+                if confirm.lower() not in ('y', 'yes'):
+                    print("Operation cancelled.")
+                    return
+            
+            if self.project_manager.delete_project(args.project_id):
+                print(f"Deleted project: {args.project_id}")
+                
+                # Reset context if we just deleted the current project
+                if self.current_context and self.current_context.get('project') == args.project_id:
+                    self.current_context.pop('project', None)
+                    self.prompt = 'cdas> ' if not self.use_colors else f"{Colors.CYAN}cdas>{Colors.ENDC} "
+                    # Reset session
+                    try:
+                        self.session = get_session()
+                    except ValueError:
+                        self.session = None
+            else:
+                print(f"Failed to delete project: {args.project_id}")
 
     # Context management
     def do_context(self, arg):
@@ -433,14 +599,28 @@ class CdasShell(cmd.Cmd):
             context clear
         """
         if arg.strip().lower() == 'clear':
-            self.current_context = None
-            self.prompt = 'cdas> '
-            print("Context cleared")
+            # Always preserve project context
+            project = self.current_context.get('project') if self.current_context else None
+            
+            if project:
+                self.current_context = {'project': project}
+                if self.use_colors:
+                    self.prompt = f"{Colors.CYAN}cdas:{Colors.YELLOW}{project}{Colors.CYAN}>{Colors.ENDC} "
+                else:
+                    self.prompt = f"cdas:{project}> "
+            else:
+                self.current_context = None
+                self.prompt = 'cdas> ' if not self.use_colors else f"{Colors.CYAN}cdas>{Colors.ENDC} "
+                
+            print("Context cleared (project context preserved)")
         else:
             if self.current_context:
                 print("Current context:")
                 for key, value in self.current_context.items():
-                    print(f"  {key}: {value}")
+                    if key == 'project':
+                        print(f"  {key}: {self.colorize(value, Colors.YELLOW)}")
+                    else:
+                        print(f"  {key}: {value}")
             else:
                 print("No current context set")
                 
@@ -455,11 +635,12 @@ class CdasShell(cmd.Cmd):
           analysis   - Financial analysis
           search     - Searching and querying
           reporting  - Report generation
+          projects   - Project management
           
         Examples:
             tutorial
             tutorial basic
-            tutorial documents
+            tutorial projects
         """
         topics = {
             'basic': """
@@ -470,18 +651,22 @@ The Construction Document Analysis System (CDAS) helps attorneys analyze
 construction documents and find financial anomalies and evidence.
 
 Basic Workflow:
-1. Ingest documents into the system
-2. List and view documents
-3. Analyze financial patterns
-4. Generate reports with evidence
+1. Create or select a project
+2. Ingest documents into the system
+3. List and view documents
+4. Analyze financial patterns
+5. Generate reports with evidence
 
 Example Session:
 --------------
+# Create a new project
+project school_123
+
 # Ingest a document (required flags: --type and --party)
 ingest /path/to/invoice.pdf --type invoice --party contractor
 
 # List documents
-list --type invoice
+list
 
 # Show details for a document
 show doc_123abc
@@ -512,7 +697,7 @@ Document Ingestion:
 ingest contract.pdf --type contract --party district
 
 # Ingestion with options
-ingest invoice.pdf --type invoice --party contractor --project school_123 --no-handwriting
+ingest invoice.pdf --type invoice --party contractor --no-handwriting
 
 # Listing documents
 list
@@ -598,6 +783,46 @@ report detailed report.md --format md
 
 # Excel format (for data export)
 report summary data.xlsx --format excel
+""",
+            'projects': """
+Project Management Tutorial
+=========================
+
+CDAS supports multiple projects with separate databases for each project.
+
+Project Commands:
+--------------
+# List all available projects
+projects
+
+# Create a new project
+project_create school_123
+
+# Set current project context
+project school_123
+
+# View current project
+project
+
+# Delete a project (will prompt for confirmation)
+project_delete school_123
+
+# Delete a project without confirmation
+project_delete school_123 --force
+
+Working with Projects:
+------------------
+# When you set a project context, all commands operate within that project
+project school_123
+list  # Lists documents in the school_123 project
+
+# You can override the project context for specific commands
+list --project district_456  # Lists documents in district_456 project
+
+# Project context is preserved when you clear other context
+context clear  # Clears document context but keeps project context
+
+# Each project has its own separate database with isolated data
 """
         }
         
@@ -618,6 +843,7 @@ Available topics:
   analysis   - Financial analysis
   search     - Searching and querying
   reporting  - Report generation
+  projects   - Project management
 
 Example: tutorial basic
 """)
@@ -625,7 +851,7 @@ Example: tutorial basic
             print(topics[arg])
         else:
             print(f"Unknown topic: {arg}")
-            print("Available topics: basic, documents, analysis, search, reporting")
+            print("Available topics: basic, documents, analysis, search, reporting, projects")
     
     def do_examples(self, arg):
         """Show examples of common CDAS commands.
@@ -635,7 +861,7 @@ Example: tutorial basic
         Examples:
             examples
             examples ingest
-            examples report
+            examples project
         """
         examples = {
             'ingest': """
@@ -792,6 +1018,34 @@ report evidence 12345.67 evidence_report.pdf
 report summary report.html --format html
 report detailed report.md --format md
 report summary data.xlsx --format excel
+""",
+            'project': """
+Project Management Command Examples:
+=================================
+# View current project context
+project
+
+# Set project context
+project school_123
+
+# List all available projects
+projects
+
+# Create a new project
+project_create new_district_789
+
+# Delete a project (with confirmation prompt)
+project_delete unused_project
+
+# Delete a project without confirmation
+project_delete temp_project --force
+
+# Clear context (preserves project context)
+context clear
+
+# Switch projects
+project school_123
+project district_456
 """
         }
         
@@ -814,6 +1068,7 @@ Available command examples:
   find     - Finding line items
   ask      - Natural language queries
   report   - Report generation
+  project  - Project management
 
 Example: examples ingest
 """)
@@ -821,30 +1076,7 @@ Example: examples ingest
             print(examples[arg])
         else:
             print(f"Unknown command: {arg}")
-            print("Available commands: ingest, list, show, patterns, amount, analyze, search, find, ask, report")
-
-    def do_project(self, arg):
-        """Set the current project.
-        
-        Usage: project PROJECT_ID
-        
-        Examples:
-            project school_123
-        """
-        arg = arg.strip()
-        if arg:
-            self.current_context = self.current_context or {}
-            self.current_context['project'] = arg
-            
-            # Set prompt with or without colors
-            if self.use_colors:
-                self.prompt = f"{Colors.CYAN}cdas:{Colors.YELLOW}{arg}{Colors.CYAN}>{Colors.ENDC} "
-            else:
-                self.prompt = f'cdas:{arg}> '
-                
-            print(f"Project context set to: {self.colorize(arg, Colors.YELLOW)}")
-        else:
-            print("Please provide a project ID")
+            print("Available commands: ingest, list, show, patterns, amount, analyze, search, find, ask, report, project")
 
     # Shell management commands
     def do_exit(self, arg):
@@ -906,16 +1138,11 @@ Example: examples ingest
     def complete_project(self, text, line, begidx, endidx):
         """Complete project IDs."""
         try:
-            with session_scope() as session:
-                from sqlalchemy.sql import distinct
-                from cdas.db.models import Document
-                
-                # Query distinct project IDs from metadata
-                query = session.query(distinct(Document.metadata['project_id'].astext))
-                projects = [row[0] for row in query if row[0]]
-                
-                # Filter by partial match
-                return [p for p in projects if p.startswith(text)]
+            # Get projects from project manager
+            projects = self.project_manager.get_project_list()
+            
+            # Filter by partial match
+            return [p for p in projects if p.startswith(text)]
         except Exception as e:
             logger.warning(f"Error completing project IDs: {str(e)}")
             return []

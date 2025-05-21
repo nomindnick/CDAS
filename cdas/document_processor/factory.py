@@ -2,7 +2,7 @@
 Document processor factory module for creating and configuring document processors.
 """
 import logging
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple, Union, List
 from pathlib import Path
 
 from sqlalchemy.orm import Session
@@ -20,6 +20,7 @@ from cdas.document_processor.extractors.excel import ExcelExtractor
 from cdas.document_processor.extractors.image import ImageExtractor
 from cdas.document_processor.extractors.text import TextExtractor
 from cdas.config import get_config
+from cdas.db.project_manager import get_project_db_manager, get_session, session_scope
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,9 @@ class DocumentProcessorFactory:
         
         # Get OCR engine configuration
         self.tesseract_cmd = self.doc_processor_config.get('tesseract_path')
+        
+        # Initialize project database manager for project-specific sessions
+        self.project_manager = get_project_db_manager()
         
         # Initialize extractors dictionary
         self._extractors: Dict[Tuple[DocumentFormat, DocumentType], BaseExtractor] = {}
@@ -175,20 +179,22 @@ class DocumentProcessorFactory:
     
     def process_single_document(
         self,
-        session: Session,
-        file_path: Union[str, Path],
-        doc_type: Union[str, DocumentType],
-        party: Union[str, PartyType],
+        session: Optional[Session] = None,
+        file_path: Union[str, Path] = None,
+        doc_type: Union[str, DocumentType] = None,
+        party: Union[str, PartyType] = None,
+        project_id: Optional[str] = None,
         **kwargs
     ) -> ProcessingResult:
         """
         Process a single document with the appropriate extractor.
         
         Args:
-            session: SQLAlchemy database session
+            session: SQLAlchemy database session (optional if project_id is provided)
             file_path: Path to the document
             doc_type: Document type
             party: Party associated with the document
+            project_id: Project ID (if not using an existing session)
             **kwargs: Additional processing arguments
             
         Returns:
@@ -196,35 +202,48 @@ class DocumentProcessorFactory:
         """
         logger.info(f"Processing document: {file_path}")
         
-        # Create processor
-        processor = self.create_processor(session)
+        # Add project metadata if specified
+        if project_id:
+            kwargs['project_id'] = project_id
+            # Store project ID in document metadata
+            if 'metadata' not in kwargs:
+                kwargs['metadata'] = {}
+            kwargs['metadata']['project_id'] = project_id
         
-        # Process document
-        result = processor.process_document(file_path, doc_type, party, **kwargs)
-        
-        return result
+        # Use provided session or create a new one for the specified project
+        if session is None:
+            # Use project-specific session
+            with session_scope(project_id) as s:
+                processor = self.create_processor(s)
+                return processor.process_document(file_path, doc_type, party, **kwargs)
+        else:
+            # Use provided session
+            processor = self.create_processor(session)
+            return processor.process_document(file_path, doc_type, party, **kwargs)
         
     def process_directory(
         self,
-        session: Session,
-        directory_path: Union[str, Path],
-        doc_type: Union[str, DocumentType],
-        party: Union[str, PartyType],
+        session: Optional[Session] = None,
+        directory_path: Union[str, Path] = None,
+        doc_type: Union[str, DocumentType] = None,
+        party: Union[str, PartyType] = None,
         recursive: bool = False,
         file_extensions: Optional[List[str]] = None,
+        project_id: Optional[str] = None,
         **kwargs
     ) -> Dict[str, ProcessingResult]:
         """
         Process all documents in a directory with the appropriate extractor.
         
         Args:
-            session: SQLAlchemy database session
+            session: SQLAlchemy database session (optional if project_id is provided)
             directory_path: Path to the directory containing documents
             doc_type: Document type for all documents in directory
             party: Party associated with all documents in directory
             recursive: Whether to process subdirectories recursively
             file_extensions: List of file extensions to process (e.g., ['.pdf', '.xlsx'])
                             If None, all supported file types will be processed
+            project_id: Project ID (if not using an existing session)
             **kwargs: Additional processing arguments
             
         Returns:
@@ -240,10 +259,29 @@ class DocumentProcessorFactory:
         if not directory_path.exists() or not directory_path.is_dir():
             logger.error(f"Directory not found or not a directory: {directory_path}")
             return {}
-            
-        # Create processor
-        processor = self.create_processor(session)
         
+        # Add project metadata if specified
+        if project_id:
+            kwargs['project_id'] = project_id
+            # Store project ID in document metadata
+            if 'metadata' not in kwargs:
+                kwargs['metadata'] = {}
+            kwargs['metadata']['project_id'] = project_id
+        
+        # Create processor with appropriate session
+        if session is None and project_id:
+            # Use project context to get session
+            session = get_session(project_id)
+        elif session is None:
+            # Use current project context (if any)
+            try:
+                session = get_session()
+            except ValueError:
+                logger.error("No project specified and no current project set. Use project_id parameter or set a project context.")
+                return {}
+                
+        processor = self.create_processor(session)
+            
         # Define default file extensions if not provided
         if file_extensions is None:
             file_extensions = ['.pdf', '.xlsx', '.xls', '.csv', '.docx', '.doc', 

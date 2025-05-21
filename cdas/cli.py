@@ -15,7 +15,7 @@ from typing import Dict, List, Any, Optional, Union
 import datetime
 import markdown
 
-from cdas.db.session import get_session, session_scope
+from cdas.db.project_manager import get_project_db_manager, get_session, session_scope
 from cdas.document_processor.factory import DocumentProcessorFactory
 from cdas.document_processor.processor import DocumentType, PartyType
 from cdas.financial_analysis.engine import FinancialAnalysisEngine
@@ -204,6 +204,34 @@ def setup_report_commands(subparsers):
                                help='Output format')
 
 
+def setup_project_commands(subparsers):
+    """Set up project management commands.
+    
+    Args:
+        subparsers: argparse subparsers object
+    """
+    # Project command group
+    project_parser = subparsers.add_parser('project', help='Project management commands')
+    project_subparsers = project_parser.add_subparsers(dest='project_command', help='Project command')
+    
+    # List projects command
+    project_subparsers.add_parser('list', help='List available projects')
+    
+    # Create project command
+    create_parser = project_subparsers.add_parser('create', help='Create a new project')
+    create_parser.add_argument('project_id', help='Project identifier')
+    
+    # Delete project command
+    delete_parser = project_subparsers.add_parser('delete', help='Delete a project')
+    delete_parser.add_argument('project_id', help='Project identifier')
+    delete_parser.add_argument('--force', action='store_true', 
+                             help='Force deletion without confirmation')
+    
+    # Use project command
+    use_parser = project_subparsers.add_parser('use', help='Set the current project')
+    use_parser.add_argument('project_id', help='Project identifier')
+
+
 def ingest_document(args):
     """Ingest a document or directory of documents.
     
@@ -218,16 +246,23 @@ def ingest_document(args):
         logger.error(f"Path not found: {path}")
         return
     
+    # Set up project context if specified
+    project_manager = get_project_db_manager()
+    if hasattr(args, 'project') and args.project:
+        if not project_manager.set_current_project(args.project):
+            logger.error(f"Failed to set project context: {args.project}")
+            return
+    
     with session_scope() as session:
         # Create document processor factory
         factory = DocumentProcessorFactory()
         
         # Common processing arguments
         processing_args = {
-            'project_id': args.project,
-            'save_to_db': not args.no_db,
-            'extract_handwriting': not args.no_handwriting,
-            'extract_tables': not args.no_tables
+            'project_id': args.project if hasattr(args, 'project') else None,
+            'save_to_db': not args.no_db if hasattr(args, 'no_db') else True,
+            'extract_handwriting': not args.no_handwriting if hasattr(args, 'no_handwriting') else True,
+            'extract_tables': not args.no_tables if hasattr(args, 'no_tables') else True
         }
         
         # Process either a directory or a single file
@@ -237,7 +272,7 @@ def ingest_document(args):
             
             # Parse file extensions if provided
             file_extensions = None
-            if args.extensions:
+            if hasattr(args, 'extensions') and args.extensions:
                 file_extensions = [ext.strip() for ext in args.extensions.split(',')]
                 # Add dot prefix if missing
                 file_extensions = [ext if ext.startswith('.') else f'.{ext}' for ext in file_extensions]
@@ -248,7 +283,7 @@ def ingest_document(args):
                 path,
                 args.type,
                 args.party,
-                recursive=args.recursive,
+                recursive=args.recursive if hasattr(args, 'recursive') else False,
                 file_extensions=file_extensions,
                 **processing_args
             )
@@ -355,8 +390,8 @@ def list_documents(args):
         
         documents = search_documents(
             session,
-            doc_type=args.type,
-            party=args.party,
+            doc_type=args.type if hasattr(args, 'type') else None,
+            party=args.party if hasattr(args, 'party') else None,
             date_start=start_date,
             date_end=end_date
         )
@@ -374,7 +409,7 @@ def list_documents(args):
         print(f"Found {len(documents)} documents:")
         
         # Print document list in table format
-        headers = ["ID", "Type", "Party", "Date", "File Name"]
+        headers = ["ID", "Type", "Party", "Date", "Project", "File Name"]
         # Calculate maximum width for each column
         max_widths = [len(header) for header in headers]
         
@@ -384,6 +419,7 @@ def list_documents(args):
                 doc.doc_type or "?",
                 doc.party or "?",
                 doc.date_created.strftime("%Y-%m-%d") if doc.date_created else "?",
+                doc.metadata.get("project_id", "?") if doc.metadata else "?",
                 doc.file_name
             ]
             
@@ -399,12 +435,14 @@ def list_documents(args):
         # Print document rows
         for doc in documents:
             date_str = doc.date_created.strftime("%Y-%m-%d") if hasattr(doc, 'date_created') and doc.date_created else "?"
+            project_id = doc.metadata.get("project_id", "?") if doc.metadata else "?"
             row = [
                 f"{doc.doc_id:{max_widths[0]}}",
                 f"{doc.doc_type or '?':{max_widths[1]}}",
                 f"{doc.party or '?':{max_widths[2]}}",
                 f"{date_str:{max_widths[3]}}",
-                f"{doc.file_name:{max_widths[4]}}"
+                f"{project_id:{max_widths[4]}}",
+                f"{doc.file_name:{max_widths[5]}}"
             ]
             print(" | ".join(row))
 
@@ -424,10 +462,10 @@ def show_document(args):
         # Get document with optional relationships
         query = session.query(Document).filter(Document.doc_id == args.doc_id)
         
-        if args.pages:
+        if hasattr(args, 'pages') and args.pages:
             query = query.options(joinedload(Document.pages))
         
-        if args.items:
+        if hasattr(args, 'items') and args.items:
             query = query.options(joinedload(Document.line_items))
         
         document = query.first()
@@ -456,7 +494,7 @@ def show_document(args):
                 print(f"  {key}: {value}")
         
         # Print pages
-        if args.pages and document.pages:
+        if hasattr(args, 'pages') and args.pages and document.pages:
             pages = sorted(document.pages, key=lambda p: p.page_number)
             print(f"\nPages: {len(pages)}")
             for page in pages:
@@ -476,7 +514,7 @@ def show_document(args):
                     print(f"\n  Content:\n  {content_preview}")
         
         # Print line items
-        if args.items and document.line_items:
+        if hasattr(args, 'items') and args.items and document.line_items:
             items = sorted(document.line_items, key=lambda i: i.item_id)
             print(f"\nLine items: {len(items)}")
             for i, item in enumerate(items):
@@ -702,8 +740,8 @@ def search_documents(args):
                     embedding_manager, 
                     args.text, 
                     limit=10,
-                    doc_type=args.type,
-                    party=args.party
+                    doc_type=args.type if hasattr(args, 'type') else None,
+                    party=args.party if hasattr(args, 'party') else None
                 )
                 
                 if not results:
@@ -740,8 +778,8 @@ def search_documents(args):
             results = search_document_content(
                 session,
                 keyword=args.text,
-                doc_type=args.type,
-                party=args.party
+                doc_type=args.type if hasattr(args, 'type') else None,
+                party=args.party if hasattr(args, 'party') else None
             )
             
             if not results:
@@ -782,9 +820,9 @@ def find_line_items(args):
         
         items = search_line_items(
             session,
-            description_keyword=args.desc,
-            min_amount=args.min,
-            max_amount=args.max
+            description_keyword=args.desc if hasattr(args, 'desc') else None,
+            min_amount=args.min if hasattr(args, 'min') else None,
+            max_amount=args.max if hasattr(args, 'max') else None
         )
         
         if not items:
@@ -831,7 +869,7 @@ def ask_question(args):
         print("\nAnswer:")
         print(result['answer'])
         
-        if args.verbose and 'search_results' in result and result['search_results']:
+        if hasattr(args, 'verbose') and args.verbose and 'search_results' in result and result['search_results']:
             print("\nRelevant documents:")
             for i, doc in enumerate(result['search_results'][:3]):  # Show top 3
                 doc_info = doc['document']
@@ -866,7 +904,7 @@ def generate_report(args, report_type):
             result = report_generator.generate_summary_report(
                 args.output_path,
                 project_id=getattr(args, 'project', None),
-                format=args.format,
+                format=args.format if hasattr(args, 'format') else 'pdf',
                 include_evidence=getattr(args, 'include_evidence', False),
                 created_by=getattr(args, 'user', None)
             )
@@ -874,7 +912,7 @@ def generate_report(args, report_type):
             result = report_generator.generate_detailed_report(
                 args.output_path,
                 project_id=getattr(args, 'project', None),
-                format=args.format,
+                format=args.format if hasattr(args, 'format') else 'pdf',
                 include_evidence=getattr(args, 'include_evidence', False),
                 created_by=getattr(args, 'user', None)
             )
@@ -882,7 +920,7 @@ def generate_report(args, report_type):
             result = report_generator.generate_evidence_report(
                 args.amount,
                 args.output_path,
-                format=args.format,
+                format=args.format if hasattr(args, 'format') else 'pdf',
                 created_by=getattr(args, 'user', None)
             )
         else:
@@ -903,6 +941,71 @@ def generate_report(args, report_type):
             pass
 
 
+def manage_projects(args):
+    """Handle project management commands.
+    
+    Args:
+        args: Command-line arguments
+    """
+    project_manager = get_project_db_manager()
+    
+    if not hasattr(args, 'project_command') or not args.project_command:
+        # No subcommand specified, show help
+        parser = argparse.ArgumentParser(description='Project management commands')
+        parser.print_help()
+        return
+    
+    if args.project_command == 'list':
+        # List projects
+        projects = project_manager.get_project_list()
+        current = project_manager.get_current_project()
+        
+        if not projects:
+            print("No projects found.")
+            return
+        
+        print("Available projects:")
+        for project in projects:
+            if project == current:
+                print(f"* {project} (current)")
+            else:
+                print(f"  {project}")
+    
+    elif args.project_command == 'create':
+        # Create a new project
+        project_id = args.project_id
+        if project_manager.create_project(project_id):
+            print(f"Created project: {project_id}")
+        else:
+            print(f"Failed to create project: {project_id}")
+    
+    elif args.project_command == 'delete':
+        # Delete a project
+        project_id = args.project_id
+        
+        # Confirm deletion unless --force is specified
+        force = hasattr(args, 'force') and args.force
+        
+        if not force:
+            confirm = input(f"Are you sure you want to delete project '{project_id}'? This cannot be undone. (y/N) ")
+            if confirm.lower() not in ('y', 'yes'):
+                print("Operation cancelled.")
+                return
+        
+        if project_manager.delete_project(project_id):
+            print(f"Deleted project: {project_id}")
+        else:
+            print(f"Failed to delete project: {project_id}")
+    
+    elif args.project_command == 'use':
+        # Set the current project
+        project_id = args.project_id
+        if project_manager.set_current_project(project_id):
+            print(f"Now using project: {project_id}")
+        else:
+            print(f"Failed to set current project to: {project_id}")
+
+
 def setup_shell_command(subparsers):
     """Set up interactive shell command.
     
@@ -910,9 +1013,41 @@ def setup_shell_command(subparsers):
         subparsers: argparse subparsers object
     """
     # Shell command
-    shell_parser = subparsers.add_parser('shell', help='Start interactive shell')
+    shell_parser = subparsers.add_parser('interactive', help='Start interactive shell')
     shell_parser.add_argument('--project', 
                              help='Set initial project context')
+
+
+def start_shell(args):
+    """Start the interactive shell.
+    
+    Args:
+        args: Command-line arguments
+    """
+    logger.info("Starting interactive shell")
+    
+    # Import here to avoid circular imports
+    from cdas.interactive_shell import CdasShell
+    
+    # Set project context if specified
+    if hasattr(args, 'project') and args.project:
+        project_manager = get_project_db_manager()
+        if not project_manager.set_current_project(args.project):
+            logger.warning(f"Failed to set project context: {args.project}")
+    
+    # Create and start shell
+    shell = CdasShell()
+    
+    # Set initial project context in shell if provided
+    if hasattr(args, 'project') and args.project:
+        shell.do_project(args.project)
+    
+    try:
+        shell.cmdloop()
+    except KeyboardInterrupt:
+        print("\nKeyboard interrupt. Exiting...")
+    finally:
+        shell.save_history()
 
 
 def parse_args(args=None):
@@ -934,6 +1069,7 @@ def parse_args(args=None):
     setup_analyze_commands(subparsers)
     setup_query_commands(subparsers)
     setup_report_commands(subparsers)
+    setup_project_commands(subparsers)
     setup_shell_command(subparsers)
     
     # Add global arguments
@@ -945,32 +1081,6 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 
-def start_shell(args):
-    """Start the interactive shell.
-    
-    Args:
-        args: Command-line arguments
-    """
-    logger.info("Starting interactive shell")
-    
-    # Import here to avoid circular imports
-    from cdas.interactive_shell import CdasShell
-    
-    # Create and start shell
-    shell = CdasShell()
-    
-    # Set initial project context if provided
-    if hasattr(args, 'project') and args.project:
-        shell.do_project(args.project)
-    
-    try:
-        shell.cmdloop()
-    except KeyboardInterrupt:
-        print("\nKeyboard interrupt. Exiting...")
-    finally:
-        shell.save_history()
-
-
 def main():
     """Main entry point for the CDAS CLI."""
     args = parse_args()
@@ -980,8 +1090,15 @@ def main():
         logging.getLogger().setLevel(logging.DEBUG)
         logger.debug("Verbose logging enabled")
     
+    # Set project context if specified globally
+    if hasattr(args, 'project') and args.project and args.command != 'interactive':
+        project_manager = get_project_db_manager()
+        if not project_manager.set_current_project(args.project):
+            logger.error(f"Failed to set project context: {args.project}")
+            return
+    
     # Handle commands
-    if args.command == 'shell':
+    if args.command == 'interactive':
         start_shell(args)
     elif args.command == 'doc':
         if args.doc_command == 'ingest':
@@ -1023,6 +1140,8 @@ def main():
         else:
             parser = argparse.ArgumentParser(description='Reporting commands')
             parser.print_help()
+    elif args.command == 'project':
+        manage_projects(args)
     else:
         parser = argparse.ArgumentParser(description='Construction Document Analysis System')
         parser.print_help()
