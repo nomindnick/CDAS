@@ -345,9 +345,9 @@ class TestProjectBasedIngestion:
             assert doc.party == PartyType.CONTRACTOR.value
             
             # Verify project ID is in metadata
-            assert doc.metadata is not None
-            assert 'project_id' in doc.metadata
-            assert doc.metadata['project_id'] == ingestion_project
+            assert doc.meta_data is not None
+            assert 'project_id' in doc.meta_data
+            assert doc.meta_data['project_id'] == ingestion_project
     
     def test_document_ingestion_with_session(self, project_manager, ingestion_project, temp_text_file):
         """Test document ingestion with explicit session."""

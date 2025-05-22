@@ -399,8 +399,8 @@ def list_documents(args):
         # Filter by project if provided
         if hasattr(args, 'project') and args.project:
             documents = [doc for doc in documents if 
-                         doc.metadata and 
-                         doc.metadata.get("project_id") == args.project]
+                         doc.meta_data and 
+                         doc.meta_data.get("project_id") == args.project]
         
         if not documents:
             print("No documents found matching criteria")
@@ -419,7 +419,7 @@ def list_documents(args):
                 doc.doc_type or "?",
                 doc.party or "?",
                 doc.date_created.strftime("%Y-%m-%d") if doc.date_created else "?",
-                doc.metadata.get("project_id", "?") if doc.metadata else "?",
+                doc.meta_data.get("project_id", "?") if doc.meta_data else "?",
                 doc.file_name
             ]
             
@@ -435,7 +435,7 @@ def list_documents(args):
         # Print document rows
         for doc in documents:
             date_str = doc.date_created.strftime("%Y-%m-%d") if hasattr(doc, 'date_created') and doc.date_created else "?"
-            project_id = doc.metadata.get("project_id", "?") if doc.metadata else "?"
+            project_id = doc.meta_data.get("project_id", "?") if doc.meta_data else "?"
             row = [
                 f"{doc.doc_id:{max_widths[0]}}",
                 f"{doc.doc_type or '?':{max_widths[1]}}",
@@ -486,9 +486,9 @@ def show_document(args):
         if document.date_received:
             print(f"Date received: {document.date_received.strftime('%Y-%m-%d')}")
         
-        if document.metadata:
+        if document.meta_data:
             print("\nMetadata:")
-            for key, value in document.metadata.items():
+            for key, value in document.meta_data.items():
                 if isinstance(value, str) and len(value) > 100:
                     value = value[:97] + "..."
                 print(f"  {key}: {value}")
