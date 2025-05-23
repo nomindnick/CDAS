@@ -157,7 +157,6 @@ python -m cdas.cli [GLOBAL_OPTIONS] COMMAND [SUBCOMMAND] [ARGUMENTS] [OPTIONS]
 - `analyze` - Financial analysis commands
 - `query` - Querying and search commands
 - `report` - Reporting commands
-- `network` - Network analysis commands
 - `interactive` - Start the interactive shell
 
 ### Getting Help
@@ -310,13 +309,11 @@ CDAS can process various document types including PDFs, Excel files, and scanned
 # Import a single document (with project context)
 python -m cdas.cli --project school_renovation_2024 doc ingest path/to/document.pdf --type payment_app --party contractor
 
-# Import multiple documents from a CSV manifest
-python -m cdas.cli --project school_renovation_2024 doc batch-import manifest.csv
+# Import multiple documents from a directory
+python -m cdas.cli doc ingest /path/to/documents/ --type invoice --party contractor --recursive
 
-# CSV format example:
-# path,type,party,date,reference
-# documents/contract.pdf,contract,district,2023-01-15,Contract-2023-001
-# documents/invoice1.pdf,invoice,contractor,2023-02-20,INV-2023-001
+# Import specific file types from a directory
+python -m cdas.cli doc ingest /path/to/documents/ --type payment_app --party contractor --extensions .pdf,.xlsx
 
 # Import using current project (if set with 'project use')
 python -m cdas.cli project use school_renovation_2024
@@ -336,7 +333,7 @@ python -m cdas.cli doc list --type change_order
 python -m cdas.cli doc list --party contractor
 
 # List documents by date range
-python -m cdas.cli doc list --from 2023-01-01 --to 2023-06-30
+python -m cdas.cli doc list --start-date 2023-01-01 --end-date 2023-06-30
 ```
 
 ### Viewing Document Details
@@ -347,9 +344,6 @@ python -m cdas.cli doc show doc_123abc
 
 # View document details with line items
 python -m cdas.cli doc show doc_123abc --items
-
-# Export document to text
-python -m cdas.cli doc export doc_123abc output.txt
 ```
 
 ## Financial Analysis
@@ -377,9 +371,6 @@ python -m cdas.cli analyze amount 12345.67
 
 # Use fuzzy matching for approximate amounts
 python -m cdas.cli analyze amount 12345.67 --tolerance 0.01
-
-# Analyze amount with specific description keywords
-python -m cdas.cli analyze amount 12345.67 --keywords "HVAC,installation"
 ```
 
 ### Analyzing Documents
@@ -387,28 +378,8 @@ python -m cdas.cli analyze amount 12345.67 --keywords "HVAC,installation"
 ```bash
 # Analyze a specific document
 python -m cdas.cli analyze document doc_123abc
-
-# Find documents with suspicious patterns
-python -m cdas.cli analyze suspicious --min-confidence 0.7
 ```
 
-## Network Analysis
-
-Visualize and analyze relationships between documents.
-
-```bash
-# Generate a network visualization
-python -m cdas.cli network visualize --output network.png
-
-# Find circular references
-python -m cdas.cli network circular
-
-# Find isolated documents
-python -m cdas.cli network isolated
-
-# Analyze connections for a specific document
-python -m cdas.cli network connections doc_123abc
-```
 
 ## Reporting
 
@@ -436,12 +407,6 @@ python -m cdas.cli report custom --template custom_template.j2 custom_report.pdf
 # Include evidence citations
 python -m cdas.cli report detailed detailed_analysis.pdf --include-evidence
 
-# Include visualizations
-python -m cdas.cli report summary financial_summary.pdf --include-visuals
-
-# Select specific document types to include
-python -m cdas.cli report summary financial_summary.pdf --doc-types payment_app,change_order
-
 # Export in different formats
 python -m cdas.cli report summary financial_summary.html --format html
 python -m cdas.cli report summary financial_summary.xlsx --format excel
@@ -457,29 +422,11 @@ CDAS provides AI-powered tools for deeper analysis. These features require API k
 # Ask questions about your document set
 python -m cdas.cli query ask "When was the first time the contractor billed for elevator maintenance?"
 
-# Ask with specific document context
-python -m cdas.cli query ask "What evidence suggests double-billing?" --context doc_123abc
+# Ask with verbose output to see source documents
+python -m cdas.cli query ask "What evidence suggests double-billing?" --verbose
 ```
 
-### AI Investigation
 
-```bash
-# Have AI investigate a specific question
-python -m cdas.cli investigate "What evidence suggests the contractor double-billed for HVAC equipment?"
-
-# Run AI investigation with specific document focus
-python -m cdas.cli investigate "Are there any suspicious change orders?" --focus change_order
-```
-
-### AI-Enhanced Reporting
-
-```bash
-# Generate a narrative report using AI
-python -m cdas.cli report narrative narrative_report.pdf
-
-# Generate a focused narrative on specific issues
-python -m cdas.cli report narrative hvac_issues.pdf --focus "HVAC billing issues"
-```
 
 ## Common Workflows
 
@@ -539,25 +486,21 @@ python -m cdas.cli analyze amount 23456.78
 # 3. Generate evidence chain
 python -m cdas.cli report evidence 23456.78 evidence_chain.pdf
 
-# 4. Ask AI to investigate
-python -m cdas.cli investigate "Was the HVAC installation billed multiple times?"
+# 4. Use AI to ask questions about the data
+python -m cdas.cli query ask "Was the HVAC installation billed multiple times?"
 ```
 
 ### Full Project Analysis
 
 ```bash
-# 1. Import all documents from a CSV manifest
-python -m cdas.cli doc batch-import project_manifest.csv
+# 1. Import documents
+python -m cdas.cli doc ingest /path/to/documents/ --type invoice --party contractor --recursive
 
 # 2. Run comprehensive analysis
 python -m cdas.cli analyze patterns
-python -m cdas.cli network visualize --output network.png
 
-# 3. Find suspicious patterns
-python -m cdas.cli analyze suspicious
-
-# 4. Generate detailed report
-python -m cdas.cli report detailed detailed_analysis.pdf --include-evidence --include-visuals
+# 3. Generate detailed report
+python -m cdas.cli report detailed detailed_analysis.pdf --include-evidence
 ```
 
 ## Troubleshooting
@@ -566,9 +509,6 @@ python -m cdas.cli report detailed detailed_analysis.pdf --include-evidence --in
 
 **Database Connection Issues:**
 ```bash
-# Check database connection
-python -m cdas.cli db check-connection
-
 # Reset database (development only - will erase all data)
 python -m cdas.db.reset
 ```
@@ -577,27 +517,6 @@ python -m cdas.db.reset
 ```bash
 # Enable verbose logging for more details
 python -m cdas.cli --verbose doc ingest problematic_document.pdf
-
-# Check document processing capabilities
-python -m cdas.cli doc check-capabilities
-```
-
-**API Connection Issues:**
-```bash
-# Verify API keys (for AI features)
-python -m cdas.cli api verify
-
-# Test API connection
-python -m cdas.cli api test
-```
-
-**Performance Issues:**
-```bash
-# Check database statistics
-python -m cdas.cli db stats
-
-# Clean up temporary files
-python -m cdas.cli cleanup
 ```
 
 ### Getting Help

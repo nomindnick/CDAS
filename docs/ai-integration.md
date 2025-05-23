@@ -14,24 +14,34 @@ The AI integration module (`cdas.ai`) provides the following components:
 
 ## Configuration
 
-AI features are configured via environment variables or a config file:
+AI features are configured via environment variables or a config file. The system supports both OpenAI and Anthropic models:
 
 ```bash
-# .env file example
+# .env file example for OpenAI
 OPENAI_API_KEY=your_openai_api_key_here
+AI_PROVIDER=openai
 AI_LLM_MODEL=o4-mini
 AI_EMBEDDING_MODEL=text-embedding-3-small
 AI_REASONING_EFFORT=medium
+
+# .env file example for Anthropic
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+AI_PROVIDER=anthropic
+AI_LLM_MODEL=claude-3-7-sonnet-20250219
+AI_TEMPERATURE=0.0
 ```
 
 Configuration options:
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `OPENAI_API_KEY` | OpenAI API key for accessing models | None |
-| `AI_LLM_MODEL` | Language model to use | o4-mini |
+| `AI_PROVIDER` | LLM provider: "openai" or "anthropic" | openai |
+| `OPENAI_API_KEY` | OpenAI API key (if using OpenAI) | None |
+| `ANTHROPIC_API_KEY` | Anthropic API key (if using Anthropic) | None |
+| `AI_LLM_MODEL` | Language model to use | o4-mini (OpenAI) |
 | `AI_EMBEDDING_MODEL` | Embedding model for semantic search | text-embedding-3-small |
 | `AI_REASONING_EFFORT` | For o4 models: low, medium, high | medium |
+| `AI_TEMPERATURE` | Temperature for Claude models | 0.0 |
 
 ## Components
 

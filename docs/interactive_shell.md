@@ -7,13 +7,13 @@ The CDAS Interactive Shell provides a user-friendly command-line interface for w
 To start the interactive shell, run:
 
 ```bash
-python -m cdas.cli shell
+python -m cdas.cli interactive
 ```
 
 Or if you have the CDAS package installed:
 
 ```bash
-cdas shell
+cdas interactive
 ```
 
 ## Shell Features
@@ -80,7 +80,7 @@ The shell offers context-aware tab completion for:
 ## Example Session
 
 ```
-$ python -m cdas.cli shell
+$ python -m cdas.cli interactive
 
 Construction Document Analysis System (CDAS) - Interactive Shell
 ----------------------------------------------------------------
